@@ -20,55 +20,257 @@
       --warning: #f59e0b;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-    body { background-color: var(--bg-color); color: var(--text-main); padding: 24px; min-height: 100vh; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
 
-    /* Header Navbar */
-    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color); }
-    .brand { display: flex; align-items: center; gap: 12px; font-size: 1.25rem; font-weight: 700; }
-    .brand-icon { width: 32px; height: 32px; background: var(--accent-green); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      padding: 24px;
+      min-height: 100vh;
+    }
 
-    /* Dashboard Widgets */
-    .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px; }
-    .widget { background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); }
-    .widget h4 { color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
-    .widget .amount { font-size: 1.5rem; font-weight: 700; color: var(--text-main); }
-    .widget-input { display: flex; gap: 8px; margin-top: 10px; }
-    .widget-input input { background: var(--card-inner); border: 1px solid var(--border-color); padding: 8px 12px; border-radius: 6px; color: #fff; width: 100%; }
-    .widget-input button { background: var(--accent-blue); border: none; padding: 8px 12px; border-radius: 6px; color: #fff; font-weight: 600; cursor: pointer; }
+    /* Navbar superior */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
 
-    /* Banner Alerta */
-    .alert-banner { display: none; padding: 14px 20px; border-radius: 10px; margin-bottom: 24px; font-weight: 600; }
-    .alert-banner.warning { display: block; background: rgba(245, 158, 11, 0.15); border: 1px solid var(--warning); color: #fbbf24; }
-    .alert-banner.danger { display: block; background: rgba(239, 68, 68, 0.15); border: 1px solid var(--danger); color: #f87171; }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
 
-    /* Layout Principal */
-    .main-grid { display: grid; grid-template-columns: 360px 1fr; gap: 24px; }
-    @media (max-width: 900px) { .main-grid { grid-template-columns: 1fr; } }
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--accent-green);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+    }
 
-    .panel { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; }
-    .panel-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+    /* Banner de Alerta */
+    .alert-banner {
+      display: none;
+      padding: 14px 20px;
+      border-radius: 10px;
+      margin-bottom: 24px;
+      font-weight: 600;
+    }
 
-    /* Formulario Moderno */
-    .form-group { margin-bottom: 16px; }
-    .form-group.row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; }
-    input, select { width: 100%; background: var(--card-inner); border: 1px solid var(--border-color); padding: 10px 14px; border-radius: 8px; color: var(--text-main); font-size: 0.95rem; outline: none; }
-    input:focus, select:focus { border-color: var(--accent-green); }
+    .alert-banner.warning {
+      display: block;
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid var(--warning);
+      color: #fbbf24;
+    }
 
-    .btn-submit { width: 100%; background: var(--accent-green); color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s; margin-top: 8px; }
-    .btn-submit:hover { background: var(--accent-green-hover); }
+    .alert-banner.danger {
+      display: block;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid var(--danger);
+      color: #f87171;
+    }
+
+    /* Widgets Superiores (Presupuesto) */
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .widget {
+      background: var(--card-bg);
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+    }
+
+    .widget h4 {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+
+    .widget .amount {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .widget-input {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .widget-input input {
+      background: var(--card-inner);
+      border: 1px solid var(--border-color);
+      padding: 8px 12px;
+      border-radius: 6px;
+      color: #fff;
+      width: 100%;
+    }
+
+    .widget-input button {
+      background: var(--accent-blue);
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* Layout en 2 Columnas */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 960px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .panel {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 24px;
+    }
+
+    .panel-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Formularios */
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group.row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    input, select {
+      width: 100%;
+      background: var(--card-inner);
+      border: 1px solid var(--border-color);
+      padding: 10px 14px;
+      border-radius: 8px;
+      color: var(--text-main);
+      font-size: 0.95rem;
+      outline: none;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--accent-green);
+    }
+
+    .btn-submit {
+      width: 100%;
+      background: var(--accent-green);
+      color: #fff;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 8px;
+    }
+
+    .btn-submit:hover {
+      background: var(--accent-green-hover);
+    }
 
     /* Tabla */
-    .table-container { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; text-align: left; }
-    th { padding: 12px 16px; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; border-bottom: 1px solid var(--border-color); }
-    td { padding: 16px; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; }
-    .badge { display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 0.8rem; background: rgba(255,255,255,0.05); color: var(--text-muted); margin-top: 4px; }
+    .table-container {
+      overflow-x: auto;
+    }
 
-    /* Botón de Eliminación */
-    .btn-delete { background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid var(--danger); padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; }
-    .btn-delete:hover { background: var(--danger); color: #fff; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      padding: 12px 16px;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    td {
+      padding: 16px;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.9rem;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .btn-delete {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--danger);
+      border: 1px solid var(--danger);
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+
+    .btn-delete:hover {
+      background: var(--danger);
+      color: #fff;
+    }
   </style>
 </head>
 <body>
@@ -89,7 +291,7 @@
       <div class="amount" id="txtPresupuesto">$ 0,00</div>
       <div class="widget-input">
         <input type="number" id="inputPresupuesto" step="0.01" placeholder="Monto inicial..." />
-        <button onclick="guardarPresupuesto()">Fijar</button>
+        <button id="btnFijarPresupuesto">Fijar</button>
       </div>
     </div>
 
@@ -105,7 +307,7 @@
     </div>
   </div>
 
-  <!-- Layout en 2 columnas -->
+  <!-- Layout Principal -->
   <div class="main-grid">
     <!-- Formulario Registro -->
     <div class="panel">
@@ -118,7 +320,7 @@
 
         <div class="form-group">
           <label>Categoría</label>
-          <select id="category" required onchange="actualizarSubcategorias()">
+          <select id="category" required>
             <option value="Transporte">Transporte</option>
             <option value="Alimentación">Alimentación</option>
             <option value="Vivienda">Vivienda</option>
@@ -133,7 +335,7 @@
 
         <div class="form-group">
           <label>Descripción / Detalle</label>
-          <input type="text" id="description" placeholder="Ej: Compra de almuerzo, café, peaje..." required />
+          <input type="text" id="description" placeholder="Ej: Compra de almuerzo, peaje..." required />
         </div>
 
         <div class="form-group row">
@@ -157,3 +359,221 @@
         </div>
 
         <button type="submit" class="btn-submit">Guardar Gasto</button>
+      </form>
+    </div>
+
+    <!-- Historial -->
+    <div class="panel">
+      <div class="panel-title">📋 Historial de Gastos</div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Categoría / Subcat.</th>
+              <th>Detalle</th>
+              <th>Pagado Por</th>
+              <th>Método</th>
+              <th>Monto</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody id="tablaGastos">
+            <!-- Filas cargadas dinámicamente -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase Módulos v10 -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, doc, deleteDoc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // Reemplaza con tus credenciales de Firebase Console
+    const firebaseConfig = {
+      apiKey: "REPLACE_WITH_YOUR_FIREBASE_API_KEY",
+      authDomain: "mis-gastos-caf30.firebaseapp.com",
+      projectId: "mis-gastos-caf30",
+      storageBucket: "mis-gastos-caf30.firebasestorage.app",
+      messagingSenderId: "516822429465",
+      appId: "1:516822429465:web:3be39c1f32675d57905f88"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Mapeo dinámico de subcategorías
+    const subcategorias = {
+      "Transporte": ["Combustible/Gasolina", "Peaje", "Mantenimiento", "Pasajes"],
+      "Alimentación": ["Restaurante/Almuerzo", "Mercado", "Cafetería/Snacks"],
+      "Vivienda": ["Servicios Públicos", "Arriendo", "Reparaciones"],
+      "Entretenimiento": ["Cine/Salidas", "Suscripciones", "Eventos"]
+    };
+
+    // Formateador nativo de Pesos Colombianos (COP)
+    const formatearCOP = (valor) => {
+      return new Intl.NumberFormat('es-CO', {
+        style: 'currency',
+        currency: 'COP',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(valor || 0);
+    };
+
+    // Actualiza el menú desplegable de subcategorías según la categoría activa
+    function actualizarSubcategorias() {
+      const cat = document.getElementById('category').value;
+      const subSelect = document.getElementById('subcategory');
+      subSelect.innerHTML = '';
+
+      if (subcategorias[cat]) {
+        subcategorias[cat].forEach(sub => {
+          const option = document.createElement('option');
+          option.value = sub;
+          option.textContent = sub;
+          subSelect.appendChild(option);
+        });
+      }
+    }
+
+    // Manejo de Presupuesto Inicial
+    let presupuestoInicial = parseFloat(localStorage.getItem('presupuesto_inicial')) || 0;
+
+    document.getElementById('btnFijarPresupuesto').addEventListener('click', () => {
+      const val = parseFloat(document.getElementById('inputPresupuesto').value);
+      if (!isNaN(val) && val >= 0) {
+        presupuestoInicial = val;
+        localStorage.setItem('presupuesto_inicial', val);
+        document.getElementById('inputPresupuesto').value = '';
+        escucharCambios();
+      }
+    });
+
+    // Función global accesible desde el botón HTML de eliminar
+    window.eliminarGasto = async (id) => {
+      if (confirm("¿Estás seguro de que deseas eliminar este gasto?")) {
+        try {
+          await deleteDoc(doc(db, "expenses", id));
+        } catch (err) {
+          console.error("Error al eliminar el documento de Firestore: ", err);
+        }
+      }
+    };
+
+    // Escuchador en Tiempo Real (onSnapshot)
+    function escucharCambios() {
+      onSnapshot(query(collection(db, "expenses")), (snapshot) => {
+        const gastos = [];
+        let totalGastado = 0;
+        const categoriasMap = {};
+
+        snapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          gastos.push({ id: docSnap.id, ...data });
+
+          const monto = parseFloat(data.amount) || 0;
+          totalGastado += monto;
+
+          const cat = data.category || 'Otros';
+          categoriasMap[cat] = (categoriasMap[cat] || 0) + monto;
+        });
+
+        actualizarUI(gastos, totalGastado, categoriasMap);
+      });
+    }
+
+    // Actualización de la interfaz gráfica
+    function actualizarUI(gastos, totalGastado, categoriasMap) {
+      // 1. Renderizar filas de la tabla
+      const tbody = document.getElementById('tablaGastos');
+      tbody.innerHTML = '';
+
+      gastos.forEach(g => {
+        tbody.innerHTML += `
+          <tr>
+            <td>${g.date || ''}</td>
+            <td>
+              <strong>${g.category}</strong><br>
+              <span class="badge">${g.subcategory || 'Sin subcategoría'}</span>
+            </td>
+            <td>${g.description}</td>
+            <td>${g.payer}</td>
+            <td>${g.method}</td>
+            <td><strong>${formatearCOP(g.amount)}</strong></td>
+            <td>
+              <button class="btn-delete" onclick="eliminarGasto('${g.id}')" title="Eliminar registro">🗑️</button>
+            </td>
+          </tr>
+        `;
+      });
+
+      // 2. Cálculos de Presupuesto Restante y Alertas
+      const disponible = presupuestoInicial - totalGastado;
+      document.getElementById('txtPresupuesto').innerText = formatearCOP(presupuestoInicial);
+      document.getElementById('txtDisponible').innerText = formatearCOP(disponible);
+
+      const banner = document.getElementById('alertBanner');
+      if (presupuestoInicial > 0) {
+        const pct = (totalGastado / presupuestoInicial) * 100;
+        if (disponible < 0) {
+          banner.className = "alert-banner danger";
+          banner.innerText = `¡Alerta crítica! Has superado el presupuesto inicial por ${formatearCOP(Math.abs(disponible))}`;
+        } else if (pct >= 80) {
+          banner.className = "alert-banner warning";
+          banner.innerText = `¡Advertencia! Has alcanzado el ${pct.toFixed(1)}% de tu presupuesto.`;
+        } else {
+          banner.className = "alert-banner";
+        }
+      }
+
+      // 3. Obtener Mayor Categoría
+      let mayorCat = 'N/A';
+      let maxMonto = 0;
+
+      for (const [cat, monto] of Object.entries(categoriasMap)) {
+        if (monto > maxMonto) {
+          maxMonto = monto;
+          mayorCat = cat;
+        }
+      }
+
+      document.getElementById('txtMayorGasto').innerText = mayorCat;
+      document.getElementById('txtMontoMayorGasto').innerText = formatearCOP(maxMonto);
+    }
+
+    // Envío del Formulario
+    document.getElementById('expenseForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const nuevoGasto = {
+        amount: parseFloat(document.getElementById('amount').value),
+        category: document.getElementById('category').value,
+        subcategory: document.getElementById('subcategory').value,
+        description: document.getElementById('description').value,
+        payer: document.getElementById('payer').value,
+        method: document.getElementById('method').value,
+        date: document.getElementById('date').value
+      };
+
+      try {
+        await addDoc(collection(db, "expenses"), nuevoGasto);
+        document.getElementById('expenseForm').reset();
+        actualizarSubcategorias();
+        document.getElementById('date').valueAsDate = new Date();
+      } catch (err) {
+        console.error("Error al guardar el gasto en Firestore: ", err);
+      }
+    });
+
+    // Event Listener para cambiar subcategorías dinámicamente
+    document.getElementById('category').addEventListener('change', actualizarSubcategorias);
+
+    // Carga Inicial
+    actualizarSubcategorias();
+    document.getElementById('date').valueAsDate = new Date();
+    escucharCambios();
+  </script>
+</body>
+</html>
