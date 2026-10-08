@@ -3,829 +3,557 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control de Gastos Colaborativo</title>
+    <title>Control de Gastos Diarios Compartidos</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome icons -->
+    <!-- FontAwesome icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js for analytics -->
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Google Fonts Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            50: '#f0fdf4',
-                            100: '#dcfce7',
-                            500: '#22c55e',
-                            600: '#16a34a',
-                            700: '#15803d',
-                            900: '#14532d',
-                        },
-                        dark: {
-                            800: '#1e293b',
-                            900: '#0f172a'
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
-
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8fafc;
-        }
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
+        .category-scroll::-webkit-scrollbar {
             height: 6px;
         }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
+        .category-scroll::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
             border-radius: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
         }
     </style>
 </head>
-<body class="text-slate-800 antialiased min-h-screen flex flex-col justify-between">
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
 
-    <div id="app" class="flex-1 flex flex-col">
-
-        <!-- Notification Toast -->
-        <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3">
-            <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400"></i>
-            <span id="toast-message" class="text-sm font-medium">Mensaje de notificación</span>
-        </div>
-
-        <!-- Auth Overlay / Screen -->
-        <div id="auth-screen" class="fixed inset-0 z-40 bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-4">
-            <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 border border-slate-100">
-                <div class="text-center mb-8">
-                    <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner">
-                        <i class="fa-solid fa-wallet"></i>
-                    </div>
-                    <h1 class="text-2xl font-bold text-slate-900">Control de Gastos</h1>
-                    <p class="text-sm text-slate-500 mt-1">Sincroniza tus finanzas en tiempo real</p>
+    <!-- Navbar -->
+    <nav class="bg-slate-900 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-emerald-500 p-2 rounded-lg text-slate-900">
+                    <i class="fa-solid fa-wallet fa-lg"></i>
                 </div>
-
-                <!-- Tabs Auth -->
-                <div class="flex border-b border-slate-200 mb-6">
-                    <button id="btn-tab-login" onclick="switchAuthTab('login')" class="flex-1 pb-3 text-sm font-semibold border-b-2 border-emerald-600 text-emerald-600 transition-colors">Iniciar Sesión</button>
-                    <button id="btn-tab-register" onclick="switchAuthTab('register')" class="flex-1 pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-600 transition-colors">Registrarse</button>
-                </div>
-
-                <!-- Form Login / Register -->
-                <form id="auth-form" onsubmit="handleAuthSubmit(event)" class="space-y-4">
-                    <div id="name-field-container" class="hidden">
-                        <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Nombre Completo</label>
-                        <div class="relative">
-                            <i class="fa-solid fa-user absolute left-3 top-3.5 text-slate-400"></i>
-                            <input type="text" id="auth-name" placeholder="Ej. Ana María" class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 text-sm">
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Correo Electrónico</label>
-                        <div class="relative">
-                            <i class="fa-solid fa-envelope absolute left-3 top-3.5 text-slate-400"></i>
-                            <input type="email" id="auth-email" required placeholder="correo@ejemplo.com" class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 text-sm">
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Contraseña</label>
-                        <div class="relative">
-                            <i class="fa-solid fa-lock absolute left-3 top-3.5 text-slate-400"></i>
-                            <input type="password" id="auth-password" required placeholder="••••••••" class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 text-sm">
-                        </div>
-                    </div>
-
-                    <button type="submit" id="auth-submit-btn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-3 rounded-xl shadow-lg shadow-emerald-600/30 transition-all flex items-center justify-center gap-2">
-                        <span>Iniciar Sesión</span>
-                        <i class="fa-solid fa-arrow-right text-xs"></i>
-                    </button>
-                </form>
-
-                <div class="relative my-6 text-center">
-                    <hr class="border-slate-200">
-                    <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-3 text-xs text-slate-400">O acceso rápido</span>
-                </div>
-
-                <button onclick="loginDemo()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 text-sm">
-                    <i class="fa-solid fa-user-astronaut text-slate-500"></i>
-                    <span>Entrar como Invitado / Demo</span>
+                <span class="font-bold text-xl tracking-tight">Gastos Compartidos</span>
+            </div>
+            <div id="user-header" class="hidden flex items-center space-x-4">
+                <span class="text-sm text-slate-300 hidden sm:inline" id="user-display-name">Cargando...</span>
+                <button id="logout-btn" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm px-3 py-1.5 rounded-lg border border-slate-700 transition">
+                    <i class="fa-solid fa-right-from-bracket mr-1"></i> Salir
                 </button>
             </div>
         </div>
+    </nav>
 
-        <!-- Top Navigation -->
-        <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white font-bold shadow-md shadow-emerald-600/20">
-                        <i class="fa-solid fa-coins"></i>
-                    </div>
+    <!-- Main Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- AUTH MODAL / SCREEN -->
+        <div id="auth-container" class="max-w-md mx-auto my-12 bg-white p-8 rounded-2xl shadow-xl border border-slate-100">
+            <div class="text-center mb-6">
+                <h2 class="text-2xl font-bold text-slate-900" id="auth-title">Iniciar Sesión</h2>
+                <p class="text-slate-500 text-sm mt-1">Gestiona tus gastos en equipo y en tiempo real</p>
+            </div>
+
+            <form id="auth-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Correo Electrónico</label>
+                    <input type="email" id="auth-email" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition" placeholder="tu@email.com">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Contraseña</label>
+                    <input type="password" id="auth-password" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition" placeholder="••••••••">
+                </div>
+                <button type="submit" id="auth-submit-btn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 rounded-lg shadow-md transition">
+                    Iniciar Sesión
+                </button>
+            </form>
+
+            <div class="relative my-6">
+                <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-200"></div></div>
+                <div class="relative flex justify-center text-xs uppercase"><span class="bg-white px-2 text-slate-400">O bien</span></div>
+            </div>
+
+            <button id="demo-btn" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-2.5 rounded-lg transition flex items-center justify-center gap-2">
+                <i class="fa-solid fa-user-clock"></i> Entrar Modo Demo / Invitado
+            </button>
+
+            <div class="mt-6 text-center text-sm">
+                <span id="auth-toggle-text" class="text-slate-600">¿No tienes cuenta?</span>
+                <button id="auth-toggle-btn" class="text-emerald-600 font-semibold hover:underline ml-1">Regístrate gratis</button>
+            </div>
+        </div>
+
+        <!-- DASHBOARD CONTAINER (HIDDEN UNTIL AUTH) -->
+        <div id="dashboard-container" class="hidden space-y-6">
+
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
                     <div>
-                        <h1 class="font-bold text-slate-900 text-base leading-tight">Gastos Compartidos</h1>
-                        <p class="text-xs text-emerald-600 font-medium flex items-center gap-1">
-                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                            En vivo - En equipo
-                        </p>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Gastado</p>
+                        <h3 class="text-2xl font-black text-slate-900 mt-1" id="stat-total">$0.00</h3>
+                    </div>
+                    <div class="bg-emerald-100 text-emerald-600 p-3 rounded-full">
+                        <i class="fa-solid fa-sack-dollar fa-xl"></i>
                     </div>
                 </div>
 
-                <div class="flex items-center gap-4">
-                    <div class="hidden sm:flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-full text-xs font-medium text-slate-600">
-                        <i class="fa-solid fa-user-circle text-slate-400 text-sm"></i>
-                        <span id="current-user-display">Cargando...</span>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Registros</p>
+                        <h3 class="text-2xl font-black text-slate-900 mt-1" id="stat-count">0</h3>
                     </div>
-                    <button onclick="logout()" title="Cerrar Sesión" class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors">
-                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
-                    </button>
+                    <div class="bg-blue-100 text-blue-600 p-3 rounded-full">
+                        <i class="fa-solid fa-receipt fa-xl"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Categoría Top</p>
+                        <h3 class="text-xl font-bold text-slate-900 mt-1 truncate max-w-[150px]" id="stat-top-cat">-</h3>
+                    </div>
+                    <div class="bg-purple-100 text-purple-600 p-3 rounded-full">
+                        <i class="fa-solid fa-chart-pie fa-xl"></i>
+                    </div>
                 </div>
             </div>
-        </header>
 
-        <!-- Main Content Area -->
-        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-1 space-y-8">
+            <!-- Grid Layout Form + Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-            <!-- Stats Overview Cards -->
-            <section class="grid grid-cols-1 md:grid-cols-3 gap-5">
-                <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total General Gastado</p>
-                        <h3 id="stat-total-amount" class="text-3xl font-extrabold text-slate-900 mt-1">$0.00</h3>
-                        <p class="text-xs text-slate-500 mt-1 flex items-center gap-1">
-                            <i class="fa-solid fa-receipt text-slate-400"></i>
-                            <span id="stat-total-count">0 gastos registrados</span>
-                        </p>
-                    </div>
-                    <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-xl">
-                        <i class="fa-solid fa-sack-dollar"></i>
-                    </div>
-                </div>
-
-                <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Categoría Mayoritaria</p>
-                        <h3 id="stat-top-category" class="text-xl font-bold text-slate-800 mt-1">Sin datos</h3>
-                        <p id="stat-top-category-amount" class="text-xs text-slate-500 mt-1">$0.00 acumulado</p>
-                    </div>
-                    <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-xl">
-                        <i class="fa-solid fa-chart-pie"></i>
-                    </div>
-                </div>
-
-                <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Mi Aporte Personal</p>
-                        <h3 id="stat-user-amount" class="text-3xl font-extrabold text-slate-900 mt-1">$0.00</h3>
-                        <p id="stat-user-percent" class="text-xs text-slate-500 mt-1">0% del gasto total</p>
-                    </div>
-                    <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center text-xl">
-                        <i class="fa-solid fa-user-tag"></i>
-                    </div>
-                </div>
-            </section>
-
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-
-                <!-- Left Column: New Expense Form -->
-                <section class="lg:col-span-5 bg-white p-6 sm:p-7 rounded-2xl border border-slate-200/80 shadow-sm space-y-6 sticky top-24">
-                    <div class="flex items-center justify-between">
-                        <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-                            <i class="fa-solid fa-circle-plus text-emerald-600"></i>
-                            Registrar Nuevo Gasto
-                        </h2>
-                        <span class="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md font-medium">Hasta microgastos</span>
-                    </div>
-
-                    <form id="expense-form" onsubmit="handleNewExpense(event)" class="space-y-4">
-                        <!-- Amount -->
+                <!-- Expense Form -->
+                <div class="lg:col-span-1 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-plus-circle text-emerald-500"></i> Registrar Nuevo Gasto
+                    </h2>
+                    
+                    <form id="expense-form" class="space-y-4">
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Monto ($)</label>
-                            <div class="relative">
-                                <span class="absolute left-3.5 top-3 text-slate-400 font-semibold">$</span>
-                                <input type="number" id="expense-amount" step="0.01" min="0.01" required placeholder="0.00" class="w-full pl-8 pr-4 py-2.5 text-lg font-bold text-slate-900 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500">
-                            </div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Monto ($)</label>
+                            <input type="number" step="0.01" id="expense-amount" required class="w-full px-3 py-2 text-lg font-semibold rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="0.00">
                         </div>
 
-                        <!-- Category and Subcategory -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Categoría</label>
-                                <select id="expense-category" onchange="onCategoryChange()" required class="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 text-sm font-medium text-slate-700 bg-white">
-                                    <!-- Populated via JS -->
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Subcategoría</label>
-                                <select id="expense-subcategory" required class="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 text-sm font-medium text-slate-700 bg-white">
-                                    <!-- Populated via JS -->
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Custom Category Input (Hidden by default) -->
-                        <div id="custom-cat-container" class="hidden space-y-2 p-3 bg-amber-50 rounded-xl border border-amber-200">
-                            <p class="text-xs font-medium text-amber-800">Agregar Nueva Categoría Personalizada:</p>
-                            <div class="grid grid-cols-2 gap-2">
-                                <input type="text" id="custom-category-name" placeholder="Nombre categoría" class="w-full px-3 py-2 text-xs rounded-lg border border-amber-300">
-                                <input type="text" id="custom-subcategory-name" placeholder="Subcategoría" class="w-full px-3 py-2 text-xs rounded-lg border border-amber-300">
-                            </div>
-                        </div>
-
-                        <!-- Details / Description -->
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Detalle / Concepto</label>
-                            <input type="text" id="expense-description" required placeholder="Ej. Café matutino, fotocopias, tiquete metro..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 text-sm">
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Categoría</label>
+                            <select id="expense-category" required class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none bg-white text-sm">
+                                <!-- Categories populated dynamically -->
+                            </select>
                         </div>
 
-                        <!-- Payment Method and Paid By -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Subcategoría</label>
+                            <select id="expense-subcategory" required class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none bg-white text-sm">
+                                <!-- Subcategories populated dynamically -->
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Descripción / Detalle</label>
+                            <input type="text" id="expense-description" placeholder="Ej: Compra de almuerzo, café, peaje..." class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none text-sm">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Método de Pago</label>
-                                <select id="expense-payment-method" required class="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 text-sm font-medium text-slate-700 bg-white">
-                                    <option value="Efectivo">💵 Efectivo</option>
-                                    <option value="Tarjeta de Crédito">💳 Tarjeta Crédito</option>
-                                    <option value="Tarjeta de Débito">🏦 Tarjeta Débito</option>
-                                    <option value="Transferencia / App">📱 Transferencia / App</option>
+                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Método de Pago</label>
+                                <select id="expense-method" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none bg-white text-sm">
+                                    <option value="Efectivo">Efectivo</option>
+                                    <option value="Tarjeta de Crédito">T. Crédito</option>
+                                    <option value="Tarjeta de Débito">T. Débito</option>
+                                    <option value="Transferencia">Transferencia</option>
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Pagado por</label>
-                                <input type="text" id="expense-paid-by" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 text-sm font-medium">
+                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Pagado Por</label>
+                                <input type="text" id="expense-payer" required class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none text-sm" placeholder="Nombre">
                             </div>
                         </div>
 
-                        <!-- Date and Time -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Fecha</label>
-                                <input type="date" id="expense-date" required class="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 text-sm font-medium">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Hora</label>
-                                <input type="time" id="expense-time" required class="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 text-sm font-medium">
-                            </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Fecha</label>
+                            <input type="date" id="expense-date" required class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none text-sm">
                         </div>
 
-                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-xl shadow-lg shadow-emerald-600/30 transition-all flex items-center justify-center gap-2 mt-2">
-                            <i class="fa-solid fa-plus"></i>
-                            <span>Agregar Gasto</span>
+                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2.5 rounded-lg shadow transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-floppy-disk"></i> Guardar Gasto
                         </button>
                     </form>
-                </section>
+                </div>
 
-                <!-- Right Column: Expense List & Visual Breakdown -->
-                <section class="lg:col-span-7 space-y-6">
-
-                    <!-- Analytics Chart Card -->
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="font-bold text-slate-900 flex items-center gap-2">
-                                <i class="fa-solid fa-chart-donut text-emerald-600"></i>
-                                Distribución por Categoría
-                            </h3>
-                            <span class="text-xs text-slate-400">Actualizado en vivo</span>
-                        </div>
-                        <div class="h-56 relative">
-                            <canvas id="categoryChart"></canvas>
-                        </div>
+                <!-- Charts & Breakdown -->
+                <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-between">
+                    <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-line text-blue-500"></i> Distribución de Gastos
+                    </h2>
+                    <div class="relative h-64 md:h-72 w-full flex items-center justify-center">
+                        <canvas id="categoryChart"></canvas>
                     </div>
+                </div>
 
-                    <!-- Expense History List Card -->
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                            <h3 class="font-bold text-slate-900 flex items-center gap-2">
-                                <i class="fa-solid fa-list-check text-emerald-600"></i>
-                                Historial de Gastos
-                            </h3>
-
-                            <!-- Filters -->
-                            <div class="flex items-center gap-2 flex-wrap">
-                                <div class="relative flex-1 sm:w-48">
-                                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
-                                    <input type="text" id="filter-search" oninput="renderExpensesList()" placeholder="Buscar..." class="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/50">
-                                </div>
-                                <select id="filter-category" onchange="renderExpensesList()" class="px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 focus:outline-none bg-white">
-                                    <option value="ALL">Todas las Categorías</option>
-                                    <!-- Populated dynamically -->
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- List Container -->
-                        <div class="overflow-x-auto">
-                            <div id="expenses-list" class="space-y-3 max-h-[500px] overflow-y-auto custom-scrollbar pr-1">
-                                <!-- Dynamic Expenses Items -->
-                                <div class="text-center py-10 text-slate-400">
-                                    <i class="fa-solid fa-spinner fa-spin text-2xl mb-2 text-emerald-600"></i>
-                                    <p class="text-sm">Cargando registros en tiempo real...</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                </section>
             </div>
-        </main>
 
-        <!-- Footer -->
-        <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500 mt-12">
-            <p>Control de Gastos Colaborativo &copy; 2026 — Sincronización en directo</p>
-        </footer>
+            <!-- List & Filters -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                    <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                        <i class="fa-solid fa-list text-slate-600"></i> Historial de Gastos
+                    </h2>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <input type="text" id="filter-search" placeholder="Buscar..." class="px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                        <select id="filter-category" class="px-3 py-1.5 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none">
+                            <option value="">Todas las categorías</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-200 bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+                                <th class="p-3">Fecha</th>
+                                <th class="p-3">Categoría / Subcat.</th>
+                                <th class="p-3">Detalle</th>
+                                <th class="p-3">Pagado por</th>
+                                <th class="p-3">Método</th>
+                                <th class="p-3 text-right">Monto</th>
+                                <th class="p-3 text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="expenses-tbody" class="divide-y divide-slate-100 text-sm">
+                            <!-- Rows inserted dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-4 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center text-slate-400 text-xs">
+            Gastos Compartidos Colaborativos &copy; 2026 - Registra y sincroniza tus finanzas en tiempo real.
+        </div>
+    </footer>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl hidden transition-opacity z-50 text-sm flex items-center gap-2">
+        <i class="fa-solid fa-circle-info text-emerald-400"></i> <span id="toast-message">Mensaje</span>
     </div>
 
-    <!-- Firebase Module Scripts -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithCustomToken, signInAnonymously, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, addDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Firebase Configuration Setup
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'gastos-colaborativo-app';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' 
-            ? JSON.parse(__firebase_config) 
-            : {
-                apiKey: "REPLACE_WITH_YOUR_FIREBASE_API_KEY",
-    authDomain: "REPLACE_WITH_YOUR_PROJECT_ID.firebaseapp.com",
-    projectId: "REPLACE_WITH_YOUR_PROJECT_ID",
-    storageBucket: "REPLACE_WITH_YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "REPLACE_WITH_YOUR_MESSAGING_SENDER_ID",
-    appId: "REPLACE_WITH_YOUR_APP_ID": "demo-api-key",
-                authDomain: "demo-app.firebaseapp.com",
-                projectId: "demo-app",
-                storageBucket: "demo-app.appspot.com",
-                messagingSenderId: "123456789",
-                appId: "1:123456789:web:123456"
-            };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        // State Variables
-        let currentUser = null;
-        let expensesData = [];
-        let categoryChartInstance = null;
-        let unsubscribeSnapshot = null;
-
-        // Comprehensive Category Map
-        const CATEGORIES_DATA = {
-            "Alimentación 🍎": [
-                "Mercado / Supermercado", "Almuerzos fuera", "Cenas / Restaurantes", 
-                "Cafetería / Snacks", "Domicilios / Delivery", "Bebidas / Alcohol", "Dulces / Golosinas"
-            ],
-            "Vivienda y Servicios 🏠": [
-                "Arriendo / Hipoteca", "Administración / Condominio", "Luz / Electricidad", 
-                "Agua / Alcantarillado", "Gas natural", "Internet / Wi-Fi", 
-                "Teléfono fijo / Móvil", "Mantenimiento / Reparaciones hogar", "Limpieza / Insumos aseo"
-            ],
-            "Transporte 🚗": [
-                "Combustible / Gasolina", "Transporte público (Bus/Metro)", "Taxis / Uber / Didi", 
-                "Peajes", "Parqueaderos", "Mantenimiento de vehículo", "Lavado auto/moto", 
-                "Seguro / SOAT", "Multas de tránsito", "Mantenimiento bicicleta"
-            ],
-            "Salud y Bienestar 🏥": [
-                "Medicamentos / Farmacia", "Consultas médicas", "Odontología", 
-                "Seguro médico / EPS", "Gimnasio / Deportes", "Cuidado personal (Barbería/Peluquería)", "Suplementos"
-            ],
-            "Entretenimiento y Ocio 🍿": [
-                "Streaming (Netflix, Spotify, etc.)", "Videojuegos", "Cines / Conciertos / Eventos", 
-                "Salidas / Fiestas", "Libros / Revistas", "Hobbies", "Licoreras / Bares"
-            ],
-            "Educación y Crecimiento 📚": [
-                "Matrícula / Pensiones", "Cursos online (Platzi/Udemy)", "Libros académicos", 
-                "Útiles escolares / Papelería", "Certificaciones"
-            ],
-            "Ropa y Accesorios 👔": [
-                "Ropa casual", "Calzado", "Ropa deportiva", "Accesorios / Joyería", "Sastrería / Lavandería"
-            ],
-            "Mascotas 🐾": [
-                "Comida para mascotas", "Veterinario", "Vacunas", "Juguetes / Accesorios", "Peluquería canina/felina"
-            ],
-            "Finanzas y Obligaciones 💳": [
-                "Tarjetas de crédito", "Cuotas de préstamos", "Intereses bancarios", 
-                "Comisiones bancarias / Impuestos", "Seguros de vida/bienes"
-            ],
-            "Gastos Hormiga y Microgastos ☕": [
-                "Propinas", "Limpiaparabrisas", "Parqueadero de minutos", "Antojos rápidos", 
-                "Donaciones / Limosnas", "Fotocopias / Impresiones", "Envíos / Servicios postales"
-            ],
-            "Compras y Tecnología 💻": [
-                "Electrodomésticos", "Gadgets / Electrónica", "Software / Suscripciones", "Muebles / Decoración"
-            ],
-            "Viajes y Turismo ✈️": [
-                "Tiquetes aéreos / Hospedaje", "Excursiones / Tours", "Souvenirs"
-            ],
-            "Personalizado ✨": [
-                "Otro gasto personalizado"
-            ]
+    <!-- Application Script -->
+    <script>
+        // CONFIGURACIÓN DE FIREBASE (Reemplaza los valores con los de tu consola de Firebase)
+        const firebaseConfig = {
+            apiKey: "REPLACE_WITH_YOUR_FIREBASE_API_KEY",
+            authDomain: "REPLACE_WITH_YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "REPLACE_WITH_YOUR_PROJECT_ID",
+            storageBucket: "REPLACE_WITH_YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "REPLACE_WITH_YOUR_MESSAGING_SENDER_ID",
+            appId: "REPLACE_WITH_YOUR_APP_ID"
         };
 
-        // Initialize App
-        window.addEventListener('load', async () => {
-            initCategorySelects();
-            setDefaultDateTime();
-            initChart();
+        // Categorías exhaustivas
+        const CATEGORIES = {
+            "Alimentación": ["Mercado/Supermercado", "Almuerzos fuera", "Cenas/Restaurantes", "Cafetería/Snacks", "Domicilios/Delivery", "Bebidas/Alcohol", "Dulces/Golosinas"],
+            "Vivienda y Servicios": ["Arriendo/Hipoteca", "Administración/Condominio", "Luz/Electricidad", "Agua/Alcantarillado", "Gas", "Internet/Wi-Fi", "Teléfono móvil/Fijo", "Mantenimiento/Reparaciones", "Limpieza/Aseo"],
+            "Transporte": ["Combustible/Gasolina", "Transporte público", "Taxis/Uber/Didi", "Peajes", "Parqueaderos", "Mantenimiento vehículo", "Lavado de auto/moto", "Seguro/SOAT", "Multas", "Bicicleta"],
+            "Salud y Bienestar": ["Medicamentos/Farmacia", "Consultas médicas", "Odontología", "Seguro médico/EPS", "Gimnasio/Deportes", "Cuidado personal", "Suplementos"],
+            "Entretenimiento y Ocio": ["Streaming (Netflix, Spotify, etc.)", "Videojuegos", "Cines/Eventos/Conciertos", "Salidas/Fiestas", "Libros/Revistas", "Hobbies", "Bares/Licoreras"],
+            "Educación y Crecimiento": ["Matrícula/Pensiones", "Cursos online/Certificaciones", "Libros académicos", "Papelería/Útiles"],
+            "Ropa y Accesorios": ["Ropa casual", "Calzado", "Ropa deportiva", "Accesorios/Joyería", "Sastrería/Lavandería"],
+            "Mascotas": ["Comida para mascotas", "Veterinario", "Vacunas", "Juguetes/Accesorios", "Peluquería canina/felina"],
+            "Finanzas y Obligaciones": ["Tarjetas de crédito", "Cuotas de préstamos", "Intereses", "Comisiones bancarias", "Seguros de vida"],
+            "Gastos Hormiga y Microgastos": ["Propinas", "Limpiaparabrisas", "Parqueadero minutos", "Antojos rápidos", "Donaciones/Limosnas", "Fotocopias/Impresiones", "Envíos postales"],
+            "Compras y Tecnología": ["Electrodomésticos", "Gadgets/Electrónica", "Software/Suscripciones", "Muebles/Decoración"],
+            "Viajes y Turismo": ["Tiquetes aéreos/Hospedaje", "Excursiones/Tours", "Souvenirs"]
+        };
 
-            // Handle Auth Persistence
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    currentUser = user;
-                    document.getElementById('auth-screen').classList.add('hidden');
-                    const userName = user.displayName || (user.email ? user.email.split('@')[0] : 'Usuario Demo');
-                    document.getElementById('current-user-display').innerText = userName;
-                    document.getElementById('expense-paid-by').value = userName;
-                    showToast(`Bienvenido, ${userName}`);
-                    listenToExpenses();
-                } else {
-                    currentUser = null;
-                    document.getElementById('auth-screen').classList.remove('hidden');
-                    if (unsubscribeSnapshot) unsubscribeSnapshot();
-                }
-            });
+        let db, auth;
+        let expensesList = [];
+        let categoryChartInstance = null;
+        let isSignUpMode = false;
 
-            // Auto Auth with Custom Token if present, or Anonymous fallback
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                }
-            } catch (err) {
-                console.warn('Auth token fallthrough:', err);
-            }
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', () => {
+            initFirebase();
+            setupUI();
+            populateCategories();
+            document.getElementById('expense-date').valueAsDate = new Date();
         });
 
-        // Populate Category Dropdowns
-        function initCategorySelects() {
-            const catSelect = document.getElementById('expense-category');
-            const filterSelect = document.getElementById('filter-category');
-            
-            catSelect.innerHTML = '';
-            filterSelect.innerHTML = '<option value="ALL">Todas las Categorías</option>';
-
-            Object.keys(CATEGORIES_DATA).forEach(cat => {
-                const opt1 = document.createElement('option');
-                opt1.value = cat;
-                opt1.textContent = cat;
-                catSelect.appendChild(opt1);
-
-                const opt2 = document.createElement('option');
-                opt2.value = cat;
-                opt2.textContent = cat;
-                filterSelect.appendChild(opt2);
-            });
-
-            onCategoryChange();
-        }
-
-        window.onCategoryChange = function() {
-            const catSelect = document.getElementById('expense-category');
-            const subSelect = document.getElementById('expense-subcategory');
-            const customContainer = document.getElementById('custom-cat-container');
-            const selectedCat = catSelect.value;
-
-            subSelect.innerHTML = '';
-
-            if (selectedCat === "Personalizado ✨") {
-                customContainer.classList.remove('hidden');
-            } else {
-                customContainer.classList.add('hidden');
-            }
-
-            const subs = CATEGORIES_DATA[selectedCat] || [];
-            subs.forEach(sub => {
-                const opt = document.createElement('option');
-                opt.value = sub;
-                opt.textContent = sub;
-                subSelect.appendChild(opt);
-            });
-        };
-
-        function setDefaultDateTime() {
-            const now = new Date();
-            document.getElementById('expense-date').value = now.toISOString().split('T')[0];
-            document.getElementById('expense-time').value = now.toTimeString().slice(0,5);
-        }
-
-        // Toast notifications
-        function showToast(message, isError = false) {
-            const toast = document.getElementById('toast');
-            const icon = document.getElementById('toast-icon');
-            const msg = document.getElementById('toast-message');
-
-            msg.innerText = message;
-            if (isError) {
-                icon.className = "fa-solid fa-circle-exclamation text-rose-400";
-            } else {
-                icon.className = "fa-solid fa-circle-check text-emerald-400";
-            }
-
-            toast.classList.remove('translate-y-20', 'opacity-0');
-            setTimeout(() => {
-                toast.classList.add('translate-y-20', 'opacity-0');
-            }, 3000);
-        }
-
-        // Auth Tab Switching
-        let currentAuthMode = 'login';
-        window.switchAuthTab = function(mode) {
-            currentAuthMode = mode;
-            const btnLogin = document.getElementById('btn-tab-login');
-            const btnRegister = document.getElementById('btn-tab-register');
-            const nameField = document.getElementById('name-field-container');
-            const submitBtnText = document.querySelector('#auth-submit-btn span');
-
-            if (mode === 'login') {
-                btnLogin.className = "flex-1 pb-3 text-sm font-semibold border-b-2 border-emerald-600 text-emerald-600 transition-colors";
-                btnRegister.className = "flex-1 pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-600 transition-colors";
-                nameField.classList.add('hidden');
-                submitBtnText.innerText = "Iniciar Sesión";
-            } else {
-                btnRegister.className = "flex-1 pb-3 text-sm font-semibold border-b-2 border-emerald-600 text-emerald-600 transition-colors";
-                btnLogin.className = "flex-1 pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-600 transition-colors";
-                nameField.classList.remove('hidden');
-                submitBtnText.innerText = "Crear Cuenta";
-            }
-        };
-
-        window.handleAuthSubmit = async function(e) {
-            e.preventDefault();
-            const email = document.getElementById('auth-email').value;
-            const password = document.getElementById('auth-password').value;
-            const name = document.getElementById('auth-name').value;
-
+        function initFirebase() {
             try {
-                if (currentAuthMode === 'login') {
-                    await signInWithEmailAndPassword(auth, email, password);
-                } else {
-                    const res = await createUserWithEmailAndPassword(auth, email, password);
-                    if (name) {
-                        await updateProfile(res.user, { displayName: name });
+                firebase.initializeApp(firebaseConfig);
+                auth = firebase.auth();
+                db = firebase.firestore();
+
+                auth.onAuthStateChanged((user) => {
+                    if (user) {
+                        // FIX NULL POINTER: Safe fallback for email / display name
+                        const userName = user.displayName || (user.email ? user.email.split('@')[0] : 'Usuario Demo');
+                        document.getElementById('user-display-name').textContent = userName;
+                        document.getElementById('expense-payer').value = userName;
+                        document.getElementById('auth-container').classList.add('hidden');
+                        document.getElementById('dashboard-container').classList.remove('hidden');
+                        document.getElementById('user-header').classList.remove('hidden');
+                        
+                        listenToExpenses();
+                    } else {
+                        document.getElementById('auth-container').classList.remove('hidden');
+                        document.getElementById('dashboard-container').classList.add('hidden');
+                        document.getElementById('user-header').classList.add('hidden');
                     }
-                }
-            } catch (error) {
-                showToast(error.message, true);
-            }
-        };
-
-        window.loginDemo = async function() {
-            try {
-                const anon = await signInAnonymously(auth);
-                await updateProfile(anon.user, { displayName: "Usuario Demo" });
-                document.getElementById('current-user-display').innerText = "Usuario Demo";
-                document.getElementById('expense-paid-by').value = "Usuario Demo";
-            } catch (error) {
-                showToast("Error en login Demo", true);
-            }
-        };
-
-        window.logout = function() {
-            signOut(auth);
-        };
-
-        // Firestore Real-Time Listener (Shared Public Ledger under Rule 1 Path)
-        function listenToExpenses() {
-            if (!currentUser) return;
-
-            const publicExpensesCol = collection(db, 'artifacts', appId, 'public', 'data', 'expenses');
-
-            unsubscribeSnapshot = onSnapshot(publicExpensesCol, (snapshot) => {
-                expensesData = [];
-                snapshot.forEach(docSnap => {
-                    expensesData.push({ id: docSnap.id, ...docSnap.data() });
                 });
-
-                // Sort by date/time descending
-                expensesData.sort((a, b) => new Date(`${b.date}T${b.time}`) - new Date(`${a.date}T${a.time}`));
-
-                updateUIAndAnalytics();
-            }, (error) => {
-                console.error("Firestore error:", error);
-                showToast("Error al sincronizar datos en tiempo real", true);
-            });
+            } catch (error) {
+                console.error("Error al inicializar Firebase:", error);
+                showToast("Error de inicialización de Firebase. Verifica tus claves.");
+            }
         }
 
-        // Add Expense Function
-        window.handleNewExpense = async function(e) {
-            e.preventDefault();
-            if (!currentUser) {
-                showToast("Debes iniciar sesión", true);
+        function setupUI() {
+            // Auth Toggle
+            document.getElementById('auth-toggle-btn').addEventListener('click', () => {
+                isSignUpMode = !isSignUpMode;
+                document.getElementById('auth-title').textContent = isSignUpMode ? 'Crear Cuenta' : 'Iniciar Sesión';
+                document.getElementById('auth-submit-btn').textContent = isSignUpMode ? 'Registrarse' : 'Iniciar Sesión';
+                document.getElementById('auth-toggle-text').textContent = isSignUpMode ? '¿Ya tienes cuenta?' : '¿No tienes cuenta?';
+                document.getElementById('auth-toggle-btn').textContent = isSignUpMode ? 'Inicia sesión' : 'Regístrate gratis';
+            });
+
+            // Auth Submit
+            document.getElementById('auth-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('auth-email').value;
+                const password = document.getElementById('auth-password').value;
+
+                try {
+                    if (isSignUpMode) {
+                        await auth.createUserWithEmailAndPassword(email, password);
+                        showToast("¡Cuenta creada exitosamente!");
+                    } else {
+                        await auth.signInWithEmailAndPassword(email, password);
+                        showToast("¡Bienvenido de nuevo!");
+                    }
+                } catch (error) {
+                    showToast(error.message);
+                }
+            });
+
+            // Demo Mode Login
+            document.getElementById('demo-btn').addEventListener('click', async () => {
+                try {
+                    const cred = await auth.signInAnonymously();
+                    if(cred && cred.user) {
+                        await cred.user.updateProfile({ displayName: 'Usuario Demo' });
+                    }
+                    showToast("Ingresado en modo Demo");
+                } catch (error) {
+                    showToast(error.message);
+                }
+            });
+
+            // Logout
+            document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
+
+            // Add Expense
+            document.getElementById('expense-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const amount = parseFloat(document.getElementById('expense-amount').value);
+                const category = document.getElementById('expense-category').value;
+                const subcategory = document.getElementById('expense-subcategory').value;
+                const description = document.getElementById('expense-description').value;
+                const method = document.getElementById('expense-method').value;
+                const payer = document.getElementById('expense-payer').value;
+                const date = document.getElementById('expense-date').value;
+
+                try {
+                    await db.collection('expenses').add({
+                        amount,
+                        category,
+                        subcategory,
+                        description,
+                        method,
+                        payer,
+                        date,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    document.getElementById('expense-form').reset();
+                    document.getElementById('expense-date').valueAsDate = new Date();
+                    showToast("Gasto guardado correctamente");
+                } catch (error) {
+                    showToast("Error al guardar: " + error.message);
+                }
+            });
+
+            // Filters
+            document.getElementById('filter-search').addEventListener('input', renderTable);
+            document.getElementById('filter-category').addEventListener('change', renderTable);
+        }
+
+        function populateCategories() {
+            const catSelect = document.getElementById('expense-category');
+            const subcatSelect = document.getElementById('expense-subcategory');
+            const filterCatSelect = document.getElementById('filter-category');
+
+            catSelect.innerHTML = '';
+            filterCatSelect.innerHTML = '<option value="">Todas las categorías</option>';
+
+            Object.keys(CATEGORIES).forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat;
+                opt.textContent = cat;
+                catSelect.appendChild(opt);
+
+                const filterOpt = document.createElement('option');
+                filterOpt.value = cat;
+                filterOpt.textContent = cat;
+                filterCatSelect.appendChild(filterOpt);
+            });
+
+            const updateSubcats = () => {
+                const selectedCat = catSelect.value;
+                subcatSelect.innerHTML = '';
+                if (CATEGORIES[selectedCat]) {
+                    CATEGORIES[selectedCat].forEach(subcat => {
+                        const opt = document.createElement('option');
+                        opt.value = subcat;
+                        opt.textContent = subcat;
+                        subcatSelect.appendChild(opt);
+                    });
+                }
+            };
+
+            catSelect.addEventListener('change', updateSubcats);
+            updateSubcats();
+        }
+
+        function listenToExpenses() {
+            db.collection('expenses').orderBy('date', 'desc')
+                .onSnapshot((snapshot) => {
+                    expensesList = [];
+                    snapshot.forEach(doc => {
+                        expensesList.push({ id: doc.id, ...doc.data() });
+                    });
+                    updateDashboard();
+                }, (error) => {
+                    console.error("Error al escuchar cambios:", error);
+                });
+        }
+
+        function updateDashboard() {
+            renderTable();
+            updateStatsAndCharts();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('expenses-tbody');
+            const search = document.getElementById('filter-search').value.toLowerCase();
+            const catFilter = document.getElementById('filter-category').value;
+
+            const filtered = expensesList.filter(item => {
+                const matchesSearch = (item.description || '').toLowerCase().includes(search) ||
+                                      (item.payer || '').toLowerCase().includes(search);
+                const matchesCategory = !catFilter || item.category === catFilter;
+                return matchesSearch && matchesCategory;
+            });
+
+            tbody.innerHTML = '';
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400">No se encontraron registros</td></tr>`;
                 return;
             }
 
-            const amount = parseFloat(document.getElementById('expense-amount').value);
-            let category = document.getElementById('expense-category').value;
-            let subcategory = document.getElementById('expense-subcategory').value;
-            const description = document.getElementById('expense-description').value;
-            const paymentMethod = document.getElementById('expense-payment-method').value;
-            const paidBy = document.getElementById('expense-paid-by').value;
-            const date = document.getElementById('expense-date').value;
-            const time = document.getElementById('expense-time').value;
+            filtered.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition";
+                tr.innerHTML = `
+                    <td class="p-3 text-slate-600">${item.date || '-'}</td>
+                    <td class="p-3">
+                        <div class="font-semibold text-slate-800">${item.category}</div>
+                        <div class="text-xs text-slate-400">${item.subcategory}</div>
+                    </td>
+                    <td class="p-3 text-slate-600">${item.description || '-'}</td>
+                    <td class="p-3"><span class="px-2 py-1 bg-slate-100 rounded text-xs text-slate-700 font-medium">${item.payer}</span></td>
+                    <td class="p-3 text-slate-500 text-xs">${item.method}</td>
+                    <td class="p-3 text-right font-bold text-slate-900">$${(item.amount || 0).toFixed(2)}</td>
+                    <td class="p-3 text-center">
+                        <button onclick="deleteExpense('${item.id}')" class="text-rose-500 hover:text-rose-700 p-1">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
 
-            if (category === "Personalizado ✨") {
-                const customCat = document.getElementById('custom-category-name').value.trim();
-                const customSub = document.getElementById('custom-subcategory-name').value.trim();
-                if (customCat) category = customCat;
-                if (customSub) subcategory = customSub;
-            }
-
-            const expensePayload = {
-                amount,
-                category,
-                subcategory,
-                description,
-                paymentMethod,
-                paidBy,
-                date,
-                time,
-                userId: currentUser.uid,
-                createdAt: new Date().toISOString()
-            };
-
-            try {
-                const publicExpensesCol = collection(db, 'artifacts', appId, 'public', 'data', 'expenses');
-                await addDoc(publicExpensesCol, expensePayload);
-                showToast("Gasto registrado correctamente");
-
-                // Reset description and amount
-                document.getElementById('expense-amount').value = '';
-                document.getElementById('expense-description').value = '';
-                document.getElementById('custom-category-name').value = '';
-                document.getElementById('custom-subcategory-name').value = '';
-            } catch (err) {
-                showToast("Error al guardar el gasto", true);
-            }
-        };
-
-        // Delete Expense
-        window.deleteExpense = async function(id) {
-            if (!confirm("¿Deseas eliminar este registro de gasto?")) return;
-            try {
-                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'expenses', id);
-                await deleteDoc(docRef);
-                showToast("Gasto eliminado");
-            } catch (err) {
-                showToast("Error al eliminar", true);
-            }
-        };
-
-        // Update Statistics & Charts
-        function updateUIAndAnalytics() {
-            // Calculate Totals
-            const totalAmount = expensesData.reduce((acc, curr) => acc + (curr.amount || 0), 0);
-            document.getElementById('stat-total-amount').innerText = `$${totalAmount.toLocaleString('es-ES', { minimumFractionDigits: 2 })}`;
-            document.getElementById('stat-total-count').innerText = `${expensesData.length} gastos registrados`;
-
-            // Category Totals
-            const categorySums = {};
-            let myTotal = 0;
-
-            expensesData.forEach(exp => {
-                categorySums[exp.category] = (categorySums[exp.category] || 0) + exp.amount;
-                if (exp.userId === currentUser.uid) {
-                    myTotal += exp.amount;
+        async function deleteExpense(id) {
+            if (confirm("¿Estás seguro de eliminar este gasto?")) {
+                try {
+                    await db.collection('expenses').doc(id).delete();
+                    showToast("Gasto eliminado");
+                } catch (error) {
+                    showToast("Error al eliminar");
                 }
+            }
+        }
+
+        function updateStatsAndCharts() {
+            const total = expensesList.reduce((acc, item) => acc + (item.amount || 0), 0);
+            document.getElementById('stat-total').textContent = `$${total.toFixed(2)}`;
+            document.getElementById('stat-count').textContent = expensesList.length;
+
+            // Chart data breakdown
+            const catTotals = {};
+            expensesList.forEach(item => {
+                catTotals[item.category] = (catTotals[item.category] || 0) + item.amount;
             });
 
-            // Find Top Category
-            let topCat = "Sin datos";
-            let maxAmount = 0;
-            Object.entries(categorySums).forEach(([cat, sum]) => {
-                if (sum > maxAmount) {
-                    maxAmount = sum;
+            let topCat = '-';
+            let maxVal = 0;
+            Object.entries(catTotals).forEach(([cat, val]) => {
+                if (val > maxVal) {
+                    maxVal = val;
                     topCat = cat;
                 }
             });
+            document.getElementById('stat-top-cat').textContent = topCat;
 
-            document.getElementById('stat-top-category').innerText = topCat;
-            document.getElementById('stat-top-category-amount').innerText = `$${maxAmount.toLocaleString('es-ES', { minimumFractionDigits: 2 })} acumulado`;
-
-            // User Contribution
-            document.getElementById('stat-user-amount').innerText = `$${myTotal.toLocaleString('es-ES', { minimumFractionDigits: 2 })}`;
-            const userPercent = totalAmount > 0 ? ((myTotal / totalAmount) * 100).toFixed(1) : 0;
-            document.getElementById('stat-user-percent').innerText = `${userPercent}% del gasto total`;
-
-            renderExpensesList();
-            updateChart(categorySums);
-        }
-
-        // Render Expenses List with Filters
-        window.renderExpensesList = function() {
-            const listContainer = document.getElementById('expenses-list');
-            const searchVal = document.getElementById('filter-search').value.toLowerCase();
-            const catVal = document.getElementById('filter-category').value;
-
-            const filtered = expensesData.filter(exp => {
-                const matchesSearch = exp.description.toLowerCase().includes(searchVal) || 
-                                      exp.paidBy.toLowerCase().includes(searchVal) ||
-                                      exp.subcategory.toLowerCase().includes(searchVal);
-                const matchesCat = catVal === 'ALL' || exp.category === catVal;
-                return matchesSearch && matchesCat;
-            });
-
-            if (filtered.length === 0) {
-                listContainer.innerHTML = `
-                    <div class="text-center py-10 bg-slate-50 rounded-xl border border-dashed border-slate-200">
-                        <i class="fa-solid fa-receipt text-slate-300 text-3xl mb-2"></i>
-                        <p class="text-xs font-semibold text-slate-500">No se encontraron gastos</p>
-                        <p class="text-[11px] text-slate-400">Intenta agregar uno nuevo o cambiar los filtros.</p>
-                    </div>
-                `;
-                return;
+            // Render Chart.js
+            const ctx = document.getElementById('categoryChart').getContext('2d');
+            if (categoryChartInstance) {
+                categoryChartInstance.destroy();
             }
 
-            listContainer.innerHTML = filtered.map(exp => `
-                <div class="p-4 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-all flex items-center justify-between gap-4">
-                    <div class="flex items-start gap-3.5">
-                        <div class="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-600 text-lg shadow-sm shrink-0">
-                            <i class="fa-solid fa-wallet"></i>
-                        </div>
-                        <div>
-                            <div class="flex items-center gap-2 flex-wrap">
-                                <h4 class="font-bold text-slate-900 text-sm">${exp.description}</h4>
-                                <span class="text-[10px] px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-medium">${exp.category}</span>
-                            </div>
-                            <p class="text-xs text-slate-500 mt-0.5 flex items-center gap-2 flex-wrap">
-                                <span><i class="fa-solid fa-tag text-[10px] mr-1"></i>${exp.subcategory}</span>
-                                <span>•</span>
-                                <span><i class="fa-solid fa-user text-[10px] mr-1"></i>${exp.paidBy}</span>
-                                <span>•</span>
-                                <span><i class="fa-solid fa-credit-card text-[10px] mr-1"></i>${exp.paymentMethod}</span>
-                            </p>
-                            <p class="text-[11px] text-slate-400 mt-1">
-                                <i class="fa-regular fa-clock mr-1"></i>${exp.date} ${exp.time}
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-center gap-3">
-                        <div class="text-right">
-                            <span class="block font-extrabold text-slate-900 text-base">$${exp.amount.toFixed(2)}</span>
-                        </div>
-                        <button onclick="deleteExpense('${exp.id}')" class="p-2 text-slate-300 hover:text-rose-500 transition-colors">
-                            <i class="fa-solid fa-trash-can text-sm"></i>
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-        };
-
-        // Chart Initialization and Updates
-        function initChart() {
-            const ctx = document.getElementById('categoryChart').getContext('2d');
             categoryChartInstance = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: [],
+                    labels: Object.keys(catTotals),
                     datasets: [{
-                        data: [],
+                        data: Object.values(catTotals),
                         backgroundColor: [
-                            '#22c55e', '#3b82f6', '#a855f7', '#f59e0b', 
-                            '#ec4899', '#06b6d4', '#84cc16', '#6366f1'
-                        ],
-                        borderWidth: 0
+                            '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b',
+                            '#14b8a6', '#6366f1', '#f43f5e', '#84cc16', '#06b6d4'
+                        ]
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            position: 'right',
-                            labels: {
-                                font: { size: 11, family: 'Inter' },
-                                boxWidth: 12
-                            }
-                        }
-                    },
-                    cutout: '70%'
+                        legend: { position: 'bottom' }
+                    }
                 }
             });
         }
 
-        function updateChart(categorySums) {
-            if (!categoryChartInstance) return;
-            const labels = Object.keys(categorySums);
-            const data = Object.values(categorySums);
-
-            categoryChartInstance.data.labels = labels.length > 0 ? labels : ['Sin datos'];
-            categoryChartInstance.data.datasets[0].data = data.length > 0 ? data : [1];
-            categoryChartInstance.update();
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').textContent = msg;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3500);
         }
     </script>
 </body>
