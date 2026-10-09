@@ -200,6 +200,11 @@
       outline: none;
     }
 
+    input[type="file"] {
+      padding: 8px;
+      font-size: 0.85rem;
+    }
+
     input:focus, select:focus {
       border-color: var(--accent-green);
     }
@@ -219,6 +224,11 @@
 
     .btn-submit:hover {
       background: var(--accent-green-hover);
+    }
+
+    .btn-submit:disabled {
+      background: var(--border-color);
+      cursor: not-allowed;
     }
 
     /* Tabla */
@@ -269,6 +279,24 @@
 
     .btn-delete:hover {
       background: var(--danger);
+      color: #fff;
+    }
+
+    .btn-receipt {
+      display: inline-block;
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--accent-blue);
+      border: 1px solid var(--accent-blue);
+      padding: 4px 8px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 0.8rem;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .btn-receipt:hover {
+      background: var(--accent-blue);
       color: #fff;
     }
   </style>
@@ -358,7 +386,13 @@
           <input type="date" id="date" required />
         </div>
 
-        <button type="submit" class="btn-submit">Guardar Gasto</button>
+        <!-- Campo Opcional para Comprobante/Recibo -->
+        <div class="form-group">
+          <label>Comprobante / Recibo (Opcional)</label>
+          <input type="file" id="receipt" accept="image/*" />
+        </div>
+
+        <button type="submit" class="btn-submit" id="btnSubmit">Guardar Gasto</button>
       </form>
     </div>
 
@@ -374,6 +408,7 @@
               <th>Detalle</th>
               <th>Pagado Por</th>
               <th>Método</th>
+              <th>Comprobante</th>
               <th>Monto</th>
               <th>Acción</th>
             </tr>
@@ -390,6 +425,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, collection, addDoc, doc, deleteDoc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
     // Reemplaza con tus credenciales de Firebase Console
     const firebaseConfig = {
@@ -403,6 +439,7 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const storage = getStorage(app);
 
     // Mapeo dinámico de subcategorías
     const subcategorias = {
@@ -486,11 +523,14 @@
 
     // Actualización de la interfaz gráfica
     function actualizarUI(gastos, totalGastado, categoriasMap) {
-      // 1. Renderizar filas de la tabla
       const tbody = document.getElementById('tablaGastos');
       tbody.innerHTML = '';
 
       gastos.forEach(g => {
+        const comprobanteHTML = g.receiptUrl 
+          ? `<a href="${g.receiptUrl}" target="_blank" class="btn-receipt">📷 Ver</a>` 
+          : `<span style="color: var(--text-muted); font-size: 0.8rem;">Sin foto</span>`;
+
         tbody.innerHTML += `
           <tr>
             <td>${g.date || ''}</td>
@@ -501,6 +541,7 @@
             <td>${g.description}</td>
             <td>${g.payer}</td>
             <td>${g.method}</td>
+            <td>${comprobanteHTML}</td>
             <td><strong>${formatearCOP(g.amount)}</strong></td>
             <td>
               <button class="btn-delete" onclick="eliminarGasto('${g.id}')" title="Eliminar registro">🗑️</button>
@@ -509,7 +550,7 @@
         `;
       });
 
-      // 2. Cálculos de Presupuesto Restante y Alertas
+      // Cálculo de Presupuesto Restante y Alertas
       const disponible = presupuestoInicial - totalGastado;
       document.getElementById('txtPresupuesto').innerText = formatearCOP(presupuestoInicial);
       document.getElementById('txtDisponible').innerText = formatearCOP(disponible);
@@ -528,7 +569,7 @@
         }
       }
 
-      // 3. Obtener Mayor Categoría
+      // Obtener Mayor Categoría
       let mayorCat = 'N/A';
       let maxMonto = 0;
 
@@ -547,23 +588,43 @@
     document.getElementById('expenseForm').addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      const nuevoGasto = {
-        amount: parseFloat(document.getElementById('amount').value),
-        category: document.getElementById('category').value,
-        subcategory: document.getElementById('subcategory').value,
-        description: document.getElementById('description').value,
-        payer: document.getElementById('payer').value,
-        method: document.getElementById('method').value,
-        date: document.getElementById('date').value
-      };
+      const btnSubmit = document.getElementById('btnSubmit');
+      btnSubmit.disabled = true;
+      btnSubmit.textContent = "Guardando...";
+
+      const receiptFile = document.getElementById('receipt').files[0];
+      let receiptUrl = null;
 
       try {
+        // Subir comprobante a Storage de forma Opcional
+        if (receiptFile) {
+          const fileName = `${Date.now()}_${receiptFile.name}`;
+          const storageRef = ref(storage, `receipts/${fileName}`);
+          const uploadSnapshot = await uploadBytes(storageRef, receiptFile);
+          receiptUrl = await getDownloadURL(uploadSnapshot.ref);
+        }
+
+        const nuevoGasto = {
+          amount: parseFloat(document.getElementById('amount').value),
+          category: document.getElementById('category').value,
+          subcategory: document.getElementById('subcategory').value,
+          description: document.getElementById('description').value,
+          payer: document.getElementById('payer').value,
+          method: document.getElementById('method').value,
+          date: document.getElementById('date').value,
+          receiptUrl: receiptUrl
+        };
+
         await addDoc(collection(db, "expenses"), nuevoGasto);
         document.getElementById('expenseForm').reset();
         actualizarSubcategorias();
         document.getElementById('date').valueAsDate = new Date();
       } catch (err) {
         console.error("Error al guardar el gasto en Firestore: ", err);
+        alert("Error al guardar el gasto: " + err.message);
+      } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = "Guardar Gasto";
       }
     });
 
