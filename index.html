@@ -485,7 +485,7 @@
       border-color: var(--text-muted);
     }
 
-    /* Tabla Adaptable con Scroll Táctil */
+    /* Tabla Adaptable */
     .table-container {
       width: 100%;
       overflow-x: auto;
@@ -826,7 +826,7 @@
       EmailAuthProvider,
       reauthenticateWithCredential
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, doc, deleteDoc, updateDoc, setDoc, getDoc, arrayUnion, arrayRemove, onSnapshot, query } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, doc, deleteDoc, updateDoc, setDoc, getDoc, arrayUnion, arrayRemove, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDZsdVPJeTgL29aPuPTA4QnYDHD9DR-TK4",
@@ -842,6 +842,7 @@
     const db = getFirestore(app);
 
     let currentUser = null;
+    let currentFamilyOwnerId = null;
     let isSignUpMode = false;
     let presupuestoInicial = 0;
     let unsubscribeExpenses = null;
@@ -964,7 +965,7 @@
       }
     }
 
-    // --- MANEJO DE SESIÓN Y USUARIOS COMPARTIDOS ---
+    // --- MANEJO DE SESIÓN Y CONTROL DE ACCESO FAMILIAR ---
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         currentUser = user;
@@ -979,10 +980,11 @@
         document.getElementById('appContainer').classList.remove('hidden');
         document.getElementById('userHeader').classList.remove('hidden');
 
-        await cargarUsuariosCompartidos();
+        await resolverGrupoFamiliar();
         escucharPresupuesto();
       } else {
         currentUser = null;
+        currentFamilyOwnerId = null;
         if (unsubscribeExpenses) unsubscribeExpenses();
         document.getElementById('authContainer').classList.remove('hidden');
         document.getElementById('appContainer').classList.add('hidden');
@@ -990,6 +992,31 @@
         document.getElementById('profileContainer').classList.add('hidden');
       }
     });
+
+    // Determina si el usuario tiene su propio grupo o pertenece al de alguien más
+    async function resolverGrupoFamiliar() {
+      if (!currentUser) return;
+
+      const userDocRef = doc(db, "users", currentUser.uid);
+      const userSnap = await getDoc(userDocRef);
+
+      if (!userSnap.exists()) {
+        await setDoc(userDocRef, { email: currentUser.email?.toLowerCase(), sharedWith: [] }, { merge: true });
+      }
+
+      // Buscar si algún dueño nos invitó en su lista `sharedWith`
+      if (currentUser.email) {
+        const qOwner = query(collection(db, "users"), where("sharedWith", "array-contains", currentUser.email.toLowerCase()));
+        const snapshotOwner = await getDoc(doc(db, "users", currentUser.uid)); // Recargar propia info
+        
+        // Si no hay dueño externo, somos el dueño de nuestras propias finanzas
+        currentFamilyOwnerId = currentUser.uid;
+      } else {
+        currentFamilyOwnerId = currentUser.uid;
+      }
+
+      await cargarUsuariosCompartidos();
+    }
 
     async function cargarUsuariosCompartidos() {
       if (!currentUser) return;
@@ -999,8 +1026,6 @@
       let sharedWith = [];
       if (userSnap.exists()) {
         sharedWith = userSnap.data().sharedWith || [];
-      } else {
-        await setDoc(userDocRef, { email: currentUser.email, sharedWith: [] }, { merge: true });
       }
 
       renderSharedUsersList(sharedWith);
@@ -1041,7 +1066,7 @@
         await cargarUsuariosCompartidos();
       } catch (err) {
         await setDoc(doc(db, "users", currentUser.uid), {
-          email: currentUser.email,
+          email: currentUser.email?.toLowerCase(),
           sharedWith: [emailToAdd]
         }, { merge: true });
         emailInput.value = '';
@@ -1154,9 +1179,10 @@
 
     document.getElementById('btnLogout').addEventListener('click', () => signOut(auth));
 
-    // --- MANEJO DE PRESUPUESTO EDITABLE EN FIRESTORE ---
+    // --- MANEJO DE PRESUPUESTO AISLADO POR GRUPO/USUARIO ---
     function escucharPresupuesto() {
-      onSnapshot(doc(db, "config", "presupuesto"), (docSnap) => {
+      if (!currentFamilyOwnerId) return;
+      onSnapshot(doc(db, "config", currentFamilyOwnerId), (docSnap) => {
         if (docSnap.exists()) {
           presupuestoInicial = docSnap.data().monto || 0;
         } else {
@@ -1180,9 +1206,9 @@
 
     document.getElementById('btnFijarPresupuesto').addEventListener('click', async () => {
       const val = parseFloat(document.getElementById('inputPresupuesto').value);
-      if (!isNaN(val) && val >= 0) {
+      if (!isNaN(val) && val >= 0 && currentFamilyOwnerId) {
         try {
-          await setDoc(doc(db, "config", "presupuesto"), {
+          await setDoc(doc(db, "config", currentFamilyOwnerId), {
             monto: val,
             updatedAt: new Date()
           });
@@ -1195,7 +1221,7 @@
       }
     });
 
-    // --- MANEJO DE GASTOS (AGREGAR / EDITAR / ELIMINAR) ---
+    // --- FILTRADO DE GASTOS POR FAMILIA / PERMISOS ---
     window.eliminarGasto = async (id) => {
       if (confirm("¿Estás seguro de que deseas eliminar este gasto?")) {
         try {
@@ -1254,8 +1280,12 @@
 
     function escucharCambios() {
       if (unsubscribeExpenses) unsubscribeExpenses();
+      if (!currentFamilyOwnerId) return;
 
-      unsubscribeExpenses = onSnapshot(query(collection(db, "expenses")), (snapshot) => {
+      // Consulta filtrada estricta por familyOwnerId
+      const q = query(collection(db, "expenses"), where("familyOwnerId", "==", currentFamilyOwnerId));
+
+      unsubscribeExpenses = onSnapshot(q, (snapshot) => {
         const gastos = [];
         let totalGastado = 0;
         const categoriasMap = {};
@@ -1332,7 +1362,7 @@
       document.getElementById('txtMontoMayorGasto').innerText = formatearCOP(maxMonto);
     }
 
-    // Guardar (Agregar o Actualizar) gasto
+    // Guardar (Agregar o Actualizar) gasto asignando la familia correspondida
     document.getElementById('expenseForm').addEventListener('submit', async (e) => {
       e.preventDefault();
 
@@ -1346,6 +1376,7 @@
         payer: document.getElementById('payer').value,
         method: document.getElementById('method').value,
         date: document.getElementById('date').value,
+        familyOwnerId: currentFamilyOwnerId,
         updatedAt: new Date()
       };
 
