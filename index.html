@@ -826,7 +826,7 @@
       EmailAuthProvider,
       reauthenticateWithCredential
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, doc, deleteDoc, updateDoc, setDoc, getDoc, arrayUnion, arrayRemove, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, doc, deleteDoc, updateDoc, setDoc, getDoc, getDocs, arrayUnion, arrayRemove, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDZsdVPJeTgL29aPuPTA4QnYDHD9DR-TK4",
@@ -993,26 +993,34 @@
       }
     });
 
-    // Determina si el usuario tiene su propio grupo o pertenece al de alguien más
+    // Asigna si el usuario tiene su propia cuenta o es un familiar invitado
     async function resolverGrupoFamiliar() {
       if (!currentUser) return;
 
+      const myEmail = currentUser.email ? currentUser.email.toLowerCase() : null;
+
+      // Asegurar que el documento propio del usuario exista en Firestore
       const userDocRef = doc(db, "users", currentUser.uid);
       const userSnap = await getDoc(userDocRef);
-
       if (!userSnap.exists()) {
-        await setDoc(userDocRef, { email: currentUser.email?.toLowerCase(), sharedWith: [] }, { merge: true });
+        await setDoc(userDocRef, { email: myEmail, sharedWith: [] }, { merge: true });
       }
 
-      // Buscar si algún dueño nos invitó en su lista `sharedWith`
-      if (currentUser.email) {
-        const qOwner = query(collection(db, "users"), where("sharedWith", "array-contains", currentUser.email.toLowerCase()));
-        const snapshotOwner = await getDoc(doc(db, "users", currentUser.uid)); // Recargar propia info
-        
-        // Si no hay dueño externo, somos el dueño de nuestras propias finanzas
-        currentFamilyOwnerId = currentUser.uid;
-      } else {
-        currentFamilyOwnerId = currentUser.uid;
+      currentFamilyOwnerId = currentUser.uid; // Por defecto: Dueño de sus finanzas
+
+      // Verificar si un tercero invitó a este correo
+      if (myEmail) {
+        try {
+          const qOwner = query(collection(db, "users"), where("sharedWith", "array-contains", myEmail));
+          const querySnapshot = await getDocs(qOwner);
+
+          if (!querySnapshot.empty) {
+            // Se vincula al primer dueño que haya registrado este correo
+            currentFamilyOwnerId = querySnapshot.docs[0].id;
+          }
+        } catch (err) {
+          console.error("Error al resolver grupo compartido:", err);
+        }
       }
 
       await cargarUsuariosCompartidos();
@@ -1064,6 +1072,7 @@
         });
         emailInput.value = '';
         await cargarUsuariosCompartidos();
+        alert(`¡Permisos concedidos a ${emailToAdd}! Ya puede ver e ingresar gastos.`);
       } catch (err) {
         await setDoc(doc(db, "users", currentUser.uid), {
           email: currentUser.email?.toLowerCase(),
@@ -1071,6 +1080,7 @@
         }, { merge: true });
         emailInput.value = '';
         await cargarUsuariosCompartidos();
+        alert(`¡Permisos concedidos a ${emailToAdd}! Ya puede ver e ingresar gastos.`);
       }
     });
 
@@ -1179,7 +1189,7 @@
 
     document.getElementById('btnLogout').addEventListener('click', () => signOut(auth));
 
-    // --- MANEJO DE PRESUPUESTO AISLADO POR GRUPO/USUARIO ---
+    // --- MANEJO DE PRESUPUESTO AISLADO POR GRUPO ---
     function escucharPresupuesto() {
       if (!currentFamilyOwnerId) return;
       onSnapshot(doc(db, "config", currentFamilyOwnerId), (docSnap) => {
@@ -1221,7 +1231,7 @@
       }
     });
 
-    // --- FILTRADO DE GASTOS POR FAMILIA / PERMISOS ---
+    // --- FILTRADO DE GASTOS POR GRUPO FAMILIAR ---
     window.eliminarGasto = async (id) => {
       if (confirm("¿Estás seguro de que deseas eliminar este gasto?")) {
         try {
@@ -1282,7 +1292,6 @@
       if (unsubscribeExpenses) unsubscribeExpenses();
       if (!currentFamilyOwnerId) return;
 
-      // Consulta filtrada estricta por familyOwnerId
       const q = query(collection(db, "expenses"), where("familyOwnerId", "==", currentFamilyOwnerId));
 
       unsubscribeExpenses = onSnapshot(q, (snapshot) => {
@@ -1362,7 +1371,7 @@
       document.getElementById('txtMontoMayorGasto').innerText = formatearCOP(maxMonto);
     }
 
-    // Guardar (Agregar o Actualizar) gasto asignando la familia correspondida
+    // Guardar (Agregar o Actualizar) gasto asignando el grupo familiar correspondiente
     document.getElementById('expenseForm').addEventListener('submit', async (e) => {
       e.preventDefault();
 
