@@ -112,9 +112,9 @@
       color: #fff;
     }
 
-    /* Pantalla / Modal de Autenticación y Perfil */
+    /* Modales */
     .auth-container, .modal-container {
-      max-width: 440px;
+      max-width: 460px;
       margin: 20px auto;
       background: var(--card-bg);
       border: 1px solid var(--border-color);
@@ -393,6 +393,32 @@
       padding-top: 16px;
       margin-top: 16px;
     }
+
+    .tag-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .email-tag {
+      background: var(--card-inner);
+      border: 1px solid var(--border-color);
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .email-tag button {
+      background: none;
+      border: none;
+      color: var(--danger);
+      cursor: pointer;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -451,7 +477,23 @@
       </div>
     </form>
 
-    <!-- 2. Correo Electrónico -->
+    <!-- 2. Permisos y Compartir Finanzas -->
+    <div class="profile-section">
+      <label>👥 Compartir Finanzas Con</label>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px;">
+        Ingresa los correos electrónicos de las personas que pueden ver y registrar gastos en tu panel.
+      </p>
+      <form id="formAddSharedUser" style="display: flex; gap: 8px; margin-bottom: 8px;">
+        <input type="email" id="inputSharedEmail" placeholder="correo@ejemplo.com" required />
+        <button type="submit" class="btn-submit" style="width: auto; padding: 8px 12px; margin-top: 0; background: var(--accent-blue);">Agregar</button>
+      </form>
+
+      <div id="sharedUsersList" class="tag-container">
+        <!-- Lista de usuarios autorizados cargada dinámicamente -->
+      </div>
+    </div>
+
+    <!-- 3. Correo Electrónico -->
     <div class="profile-section">
       <form id="formUpdateEmail" class="form-group">
         <label>Nuevo Correo Electrónico</label>
@@ -461,7 +503,7 @@
       </form>
     </div>
 
-    <!-- 3. Contraseña -->
+    <!-- 4. Contraseña -->
     <div class="profile-section">
       <form id="formUpdatePassword" class="form-group">
         <label>Cambiar Contraseña</label>
@@ -602,9 +644,8 @@
       EmailAuthProvider,
       reauthenticateWithCredential
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, doc, deleteDoc, setDoc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, doc, deleteDoc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot, query } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // Reemplaza con tus credenciales reales de Firebase Console
     const firebaseConfig = {
       apiKey: "AIzaSyDZsdVPJeTgL29aPuPTA4QnYDHD9DR-TK4",
       authDomain: "mis-gastos-caf30.firebaseapp.com",
@@ -623,7 +664,6 @@
     let presupuestoInicial = 0;
     let unsubscribeExpenses = null;
 
-    // Subcategorías
     const subcategorias = {
       "Transporte": ["Combustible/Gasolina", "Peaje", "Mantenimiento", "Pasajes"],
       "Alimentación": ["Restaurante/Almuerzo", "Mercado", "Cafetería/Snacks"],
@@ -655,8 +695,8 @@
       }
     }
 
-    // --- MANEJO DE SESIÓN Y PERFIL ---
-    onAuthStateChanged(auth, (user) => {
+    // --- MANEJO DE SESIÓN Y USUARIOS COMPARTIDOS ---
+    onAuthStateChanged(auth, async (user) => {
       if (user) {
         currentUser = user;
         const nombreMostrar = user.displayName || (user.email ? user.email.split('@')[0] : 'Invitado');
@@ -670,6 +710,7 @@
         document.getElementById('appContainer').classList.remove('hidden');
         document.getElementById('userHeader').classList.remove('hidden');
 
+        await cargarUsuariosCompartidos();
         escucharPresupuesto();
       } else {
         currentUser = null;
@@ -680,6 +721,80 @@
         document.getElementById('profileContainer').classList.add('hidden');
       }
     });
+
+    // Cargar y mostrar lista de correos compartidos
+    async function cargarUsuariosCompartidos() {
+      if (!currentUser) return;
+      const userDocRef = doc(db, "users", currentUser.uid);
+      const userSnap = await getDoc(userDocRef);
+
+      let sharedWith = [];
+      if (userSnap.exists()) {
+        sharedWith = userSnap.data().sharedWith || [];
+      } else {
+        await setDoc(userDocRef, { email: currentUser.email, sharedWith: [] }, { merge: true });
+      }
+
+      renderSharedUsersList(sharedWith);
+    }
+
+    function renderSharedUsersList(list) {
+      const container = document.getElementById('sharedUsersList');
+      container.innerHTML = '';
+
+      if (list.length === 0) {
+        container.innerHTML = `<span style="font-size: 0.8rem; color: var(--text-muted);">Sin usuarios agregados.</span>`;
+        return;
+      }
+
+      list.forEach(email => {
+        container.innerHTML += `
+          <div class="email-tag">
+            <span>${email}</span>
+            <button onclick="eliminarUsuarioCompartido('${email}')">✕</button>
+          </div>
+        `;
+      });
+    }
+
+    // Agregar usuario a la lista compartida
+    document.getElementById('formAddSharedUser').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const emailInput = document.getElementById('inputSharedEmail');
+      const emailToAdd = emailInput.value.trim().toLowerCase();
+
+      if (!currentUser || !emailToAdd) return;
+
+      try {
+        const userDocRef = doc(db, "users", currentUser.uid);
+        await updateDoc(userDocRef, {
+          sharedWith: arrayUnion(emailToAdd)
+        });
+        emailInput.value = '';
+        await cargarUsuariosCompartidos();
+      } catch (err) {
+        // En caso de que no exista el documento previo
+        await setDoc(doc(db, "users", currentUser.uid), {
+          email: currentUser.email,
+          sharedWith: [emailToAdd]
+        }, { merge: true });
+        emailInput.value = '';
+        await cargarUsuariosCompartidos();
+      }
+    });
+
+    window.eliminarUsuarioCompartido = async (emailToRemove) => {
+      if (!currentUser) return;
+      try {
+        const userDocRef = doc(db, "users", currentUser.uid);
+        await updateDoc(userDocRef, {
+          sharedWith: arrayRemove(emailToRemove)
+        });
+        await cargarUsuariosCompartidos();
+      } catch (err) {
+        console.error("Error al eliminar usuario compartido: ", err);
+      }
+    };
 
     // Abrir/Cerrar Modal de Perfil
     document.getElementById('btnOpenProfile').addEventListener('click', () => {
@@ -774,4 +889,174 @@
       try {
         await signInAnonymously(auth);
       } catch (err) {
-        alert("Error al entrar en Modo Demo: " +
+        alert("Error al entrar en Modo Demo: " + err.message);
+      }
+    });
+
+    // Logout
+    document.getElementById('btnLogout').addEventListener('click', () => signOut(auth));
+
+    // --- MANEJO DE PRESUPUESTO EDITABLE EN FIRESTORE ---
+    function escucharPresupuesto() {
+      onSnapshot(doc(db, "config", "presupuesto"), (docSnap) => {
+        if (docSnap.exists()) {
+          presupuestoInicial = docSnap.data().monto || 0;
+        } else {
+          presupuestoInicial = 0;
+        }
+        escucharCambios();
+      });
+    }
+
+    document.getElementById('btnEditarPresupuesto').addEventListener('click', () => {
+      document.getElementById('inputPresupuesto').value = presupuestoInicial || '';
+      document.getElementById('viewPresupuestoContainer').classList.add('hidden');
+      document.getElementById('editPresupuestoContainer').classList.remove('hidden');
+      document.getElementById('inputPresupuesto').focus();
+    });
+
+    document.getElementById('btnCancelarPresupuesto').addEventListener('click', () => {
+      document.getElementById('editPresupuestoContainer').classList.add('hidden');
+      document.getElementById('viewPresupuestoContainer').classList.remove('hidden');
+    });
+
+    document.getElementById('btnFijarPresupuesto').addEventListener('click', async () => {
+      const val = parseFloat(document.getElementById('inputPresupuesto').value);
+      if (!isNaN(val) && val >= 0) {
+        try {
+          await setDoc(doc(db, "config", "presupuesto"), {
+            monto: val,
+            updatedAt: new Date()
+          });
+          document.getElementById('editPresupuestoContainer').classList.add('hidden');
+          document.getElementById('viewPresupuestoContainer').classList.remove('hidden');
+        } catch (err) {
+          console.error("Error al actualizar presupuesto en Firestore: ", err);
+          alert("Error al guardar presupuesto.");
+        }
+      }
+    });
+
+    // --- MANEJO DE GASTOS Y FIRESTORE ---
+    window.eliminarGasto = async (id) => {
+      if (confirm("¿Estás seguro de que deseas eliminar este gasto?")) {
+        try {
+          await deleteDoc(doc(db, "expenses", id));
+        } catch (err) {
+          console.error("Error al eliminar: ", err);
+        }
+      }
+    };
+
+    function escucharCambios() {
+      if (unsubscribeExpenses) unsubscribeExpenses();
+
+      unsubscribeExpenses = onSnapshot(query(collection(db, "expenses")), (snapshot) => {
+        const gastos = [];
+        let totalGastado = 0;
+        const categoriasMap = {};
+
+        snapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          gastos.push({ id: docSnap.id, ...data });
+
+          const monto = parseFloat(data.amount) || 0;
+          totalGastado += monto;
+
+          const cat = data.category || 'Otros';
+          categoriasMap[cat] = (categoriasMap[cat] || 0) + monto;
+        });
+
+        actualizarUI(gastos, totalGastado, categoriasMap);
+      });
+    }
+
+    function actualizarUI(gastos, totalGastado, categoriasMap) {
+      const tbody = document.getElementById('tablaGastos');
+      tbody.innerHTML = '';
+
+      gastos.forEach(g => {
+        tbody.innerHTML += `
+          <tr>
+            <td>${g.date || ''}</td>
+            <td>
+              <strong>${g.category}</strong><br>
+              <span class="badge">${g.subcategory || 'Sin subcategoría'}</span>
+            </td>
+            <td>${g.description}</td>
+            <td>${g.payer}</td>
+            <td>${g.method}</td>
+            <td><strong>${formatearCOP(g.amount)}</strong></td>
+            <td>
+              <button class="btn-delete" onclick="eliminarGasto('${g.id}')" title="Eliminar registro">🗑️</button>
+            </td>
+          </tr>
+        `;
+      });
+
+      const disponible = presupuestoInicial - totalGastado;
+      document.getElementById('txtPresupuesto').innerText = formatearCOP(presupuestoInicial);
+      document.getElementById('txtDisponible').innerText = formatearCOP(disponible);
+
+      const banner = document.getElementById('alertBanner');
+      if (presupuestoInicial > 0) {
+        const pct = (totalGastado / presupuestoInicial) * 100;
+        if (disponible < 0) {
+          banner.className = "alert-banner danger";
+          banner.innerText = `¡Alerta crítica! Has superado el presupuesto inicial por ${formatearCOP(Math.abs(disponible))}`;
+        } else if (pct >= 80) {
+          banner.className = "alert-banner warning";
+          banner.innerText = `¡Advertencia! Has alcanzado el ${pct.toFixed(1)}% de tu presupuesto.`;
+        } else {
+          banner.className = "alert-banner";
+        }
+      }
+
+      let mayorCat = 'N/A';
+      let maxMonto = 0;
+      for (const [cat, monto] of Object.entries(categoriasMap)) {
+        if (monto > maxMonto) {
+          maxMonto = monto;
+          mayorCat = cat;
+        }
+      }
+      document.getElementById('txtMayorGasto').innerText = mayorCat;
+      document.getElementById('txtMontoMayorGasto').innerText = formatearCOP(maxMonto);
+    }
+
+    // Registrar nuevo gasto
+    document.getElementById('expenseForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const nuevoGasto = {
+        amount: parseFloat(document.getElementById('amount').value),
+        category: document.getElementById('category').value,
+        subcategory: document.getElementById('subcategory').value,
+        description: document.getElementById('description').value,
+        payer: document.getElementById('payer').value,
+        method: document.getElementById('method').value,
+        date: document.getElementById('date').value,
+        createdBy: currentUser ? currentUser.email : 'invitado'
+      };
+
+      try {
+        await addDoc(collection(db, "expenses"), nuevoGasto);
+        document.getElementById('expenseForm').reset();
+        actualizarSubcategorias();
+        if (currentUser) {
+          document.getElementById('payer').value = currentUser.displayName || (currentUser.email ? currentUser.email.split('@')[0] : 'Invitado');
+        }
+        document.getElementById('date').valueAsDate = new Date();
+      } catch (err) {
+        console.error("Error al guardar en Firestore: ", err);
+      }
+    });
+
+    document.getElementById('category').addEventListener('change', actualizarSubcategorias);
+
+    // Carga inicial
+    actualizarSubcategorias();
+    document.getElementById('date').valueAsDate = new Date();
+  </script>
+</body>
+</html>
