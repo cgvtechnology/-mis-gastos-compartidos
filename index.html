@@ -609,10 +609,19 @@
           <div class="form-group">
             <label>Categoría</label>
             <select id="category" required>
-              <option value="Transporte">Transporte</option>
-              <option value="Alimentación">Alimentación</option>
-              <option value="Vivienda">Vivienda</option>
-              <option value="Entretenimiento">Entretenimiento</option>
+              <option value="Alimentación">🛒 Alimentación</option>
+              <option value="Vivienda y Hogar">🏠 Vivienda y Hogar</option>
+              <option value="Transporte y Vehículos">🚗 Transporte y Vehículos</option>
+              <option value="Salud y Bienestar">🏥 Salud y Bienestar</option>
+              <option value="Educación y Desarrollo">🎓 Educación y Desarrollo</option>
+              <option value="Mascotas">🐾 Mascotas</option>
+              <option value="Entretenimiento y Ocio">🍿 Entretenimiento y Ocio</option>
+              <option value="Cuidado Personal y Ropa">👗 Cuidado Personal y Ropa</option>
+              <option value="Tecnología y Comunicaciones">📱 Tecnología y Comunicaciones</option>
+              <option value="Impuestos y Obligaciones">📜 Impuestos y Obligaciones</option>
+              <option value="Finanzas y Deudas">💳 Finanzas y Deudas</option>
+              <option value="Ahorro e Inversiones">📈 Ahorro e Inversiones</option>
+              <option value="Otros Gastos">📦 Otros Gastos</option>
             </select>
           </div>
 
@@ -623,7 +632,7 @@
 
           <div class="form-group">
             <label>Descripción / Detalle</label>
-            <input type="text" id="description" placeholder="Ej: Compra de almuerzo, peaje..." required />
+            <input type="text" id="description" placeholder="Ej: Compra de almuerzo, peaje, consulta médica..." required />
           </div>
 
           <div class="form-group row">
@@ -713,11 +722,98 @@
     let unsubscribeExpenses = null;
     let currentExpensesList = [];
 
+    // COMPLETA LISTA DE CATEGORÍAS Y SUBCATEGORÍAS EXTENDIDAS
     const subcategorias = {
-      "Transporte": ["Combustible/Gasolina", "Peaje", "Mantenimiento", "Pasajes"],
-      "Alimentación": ["Restaurante/Almuerzo", "Mercado", "Cafetería/Snacks"],
-      "Vivienda": ["Servicios Públicos", "Arriendo", "Reparaciones"],
-      "Entretenimiento": ["Cine/Salidas", "Suscripciones", "Eventos"]
+      "Alimentación": [
+        "Supermercado / Mercado",
+        "Restaurantes / Almuerzos",
+        "Domicilios / Comida Rápida",
+        "Panadería y Cafetería",
+        "Bebidas y Snacks"
+      ],
+      "Vivienda y Hogar": [
+        "Servicios Públicos (Agua/Luz/Gas)",
+        "Arriendo / Hipoteca",
+        "Administración / Condominio",
+        "Mantenimiento y Reparaciones",
+        "Artículos de Limpieza",
+        "Muebles y Electrodomésticos",
+        "Decoración y Utensilios"
+      ],
+      "Transporte y Vehículos": [
+        "Combustible / Gasolina",
+        "Pasajes (Bus, Metro, Taxis)",
+        "Peajes y Parqueaderos",
+        "Mantenimiento / Taller",
+        "Seguros de Vehículo (SOAT/Todo Riesgo)",
+        "Lavado de Vehículo",
+        "Repuestos y Accesorios"
+      ],
+      "Salud y Bienestar": [
+        "Especialistas y Consultas Médicas",
+        "Medicamentos y Farmacia",
+        "Seguro Médico / EPS / Medicina Prepagada",
+        "Odontología / Optometría",
+        "Exámenes y Laboratorios",
+        "Gimnasio y Deporte"
+      ],
+      "Educación y Desarrollo": [
+        "Matrículas y Pensiones",
+        "Útiles Escolares y Papelería",
+        "Libros y Material Educativo",
+        "Cursos, Diplomados y Certificaciones",
+        "Plataformas Educativas / Clases Online"
+      ],
+      "Mascotas": [
+        "Alimento para Mascotas",
+        "Veterinario y Medicamentos",
+        "Peluquería y Cuidado Canino/Felino",
+        "Juguetes y Accesorios"
+      ],
+      "Entretenimiento y Ocio": [
+        "Cine, Teatro y Conciertos",
+        "Viajes, Hoteles y Vacaciones",
+        "Salidas y Bar",
+        "Suscripciones (Netflix, Spotify, etc.)",
+        "Videojuegos y Hobbies",
+        "Eventos Familiares"
+      ],
+      "Cuidado Personal y Ropa": [
+        "Peluquería, Barbería y Estética",
+        "Cosméticos y Cuidado de la Piel",
+        "Ropa y Calzado",
+        "Accesorios y Joyería"
+      ],
+      "Tecnología y Comunicaciones": [
+        "Servicios de Internet y Televisión",
+        "Plan Celular y Recargas",
+        "Dispositivos (Celulares, Laptops)",
+        "Licencias de Software y Nube"
+      ],
+      "Impuestos y Obligaciones": [
+        "Impuesto de Renta",
+        "Impuesto Predial",
+        "Impuesto Vehicular",
+        "Tasas y Tramites Gubernamentales"
+      ],
+      "Finanzas y Deudas": [
+        "Pago de Tarjetas de Crédito",
+        "Cuotas de Créditos / Préstamos",
+        "Comisiones Bancarias",
+        "Intereses"
+      ],
+      "Ahorro e Inversiones": [
+        "Fondo de Emergencia",
+        "Ahorro para Proyectos / Viajes",
+        "Inversiones / CDT / Fondos",
+        "Seguro de Vida / Retiro"
+      ],
+      "Otros Gastos": [
+        "Regalos y Cumpleaños",
+        "Donaciones / Caridad",
+        "Imprevistos",
+        "Gastos Varios"
+      ]
     };
 
     const formatearCOP = (valor) => {
@@ -1004,7 +1100,6 @@
       document.getElementById('payer').value = gasto.payer || '';
       document.getElementById('date').value = gasto.date || '';
 
-      // Cambiar UI del Formulario a Modo Edición
       document.getElementById('formTitle').textContent = '✏️ Editar Gasto';
       document.getElementById('btnSubmitExpense').textContent = 'Actualizar Gasto';
       document.getElementById('btnSubmitExpense').style.background = 'var(--accent-blue)';
@@ -1132,11 +1227,9 @@
 
       try {
         if (editingId) {
-          // Modo Edición: Actualizar registro existente
           await updateDoc(doc(db, "expenses", editingId), gastoData);
           cancelarEdicionGasto();
         } else {
-          // Modo Creación: Agregar nuevo registro
           gastoData.createdBy = currentUser ? currentUser.email : 'invitado';
           gastoData.createdAt = new Date();
           await addDoc(collection(db, "expenses"), gastoData);
