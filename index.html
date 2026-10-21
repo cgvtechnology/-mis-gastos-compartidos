@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Finanzas Familiares</title>
+  <title>Finanzas Familiares y Personales</title>
   <style>
     :root {
       --bg-color: #0f172a;
@@ -79,15 +79,10 @@
       }
     }
 
-    .brand-icon {
+    .brand-logo-img {
       width: 36px;
       height: 36px;
-      background: var(--accent-green);
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.2rem;
+      object-fit: contain;
       flex-shrink: 0;
     }
 
@@ -300,7 +295,7 @@
       line-height: 1.4;
     }
 
-    /* Barra de Filtro de Tiempo */
+    /* Barra de Filtros (Espacio + Tiempo) */
     .filter-bar {
       background: var(--card-bg);
       border: 1px solid var(--border-color);
@@ -314,17 +309,23 @@
       gap: 12px;
     }
 
-    .filter-group {
+    .filter-group-container {
       display: flex;
-      align-items: center;
-      gap: 10px;
+      flex-wrap: wrap;
+      gap: 12px;
       width: 100%;
     }
 
-    @media (min-width: 480px) {
-      .filter-group {
+    @media (min-width: 640px) {
+      .filter-group-container {
         width: auto;
       }
+    }
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .filter-group label {
@@ -640,6 +641,18 @@
       margin-top: 4px;
     }
 
+    .badge-scope-family {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent-green);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .badge-scope-personal {
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--accent-blue);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
     .action-buttons {
       display: flex;
       gap: 6px;
@@ -715,7 +728,7 @@
   <!-- Header / Navbar -->
   <header>
     <div class="brand">
-      <div class="brand-icon">🏠</div>
+      <img src="logo-familia.png" alt="Logotipo Finanzas" class="brand-logo-img">
       <span>Finanzas Familiares</span>
     </div>
     <div id="userHeader" class="user-info hidden">
@@ -727,8 +740,8 @@
 
   <!-- PANTALLA DE INICIO DE SESIÓN -->
   <div id="authContainer" class="auth-container">
-    <div class="auth-title" id="authTitle">Finanzas Familiares</div>
-    <div class="auth-subtitle">Sincroniza y controla los gastos de tu hogar en tiempo real</div>
+    <div class="auth-title" id="authTitle">Finanzas Familiares y Personales</div>
+    <div class="auth-subtitle">Sincroniza y controla tus gastos individuales o del hogar en tiempo real</div>
 
     <form id="authForm">
       <div class="form-group">
@@ -770,7 +783,7 @@
     <div class="profile-section">
       <label>👥 Compartir Finanzas Familiares Con</label>
       <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">
-        Ingresa los correos de tu familia para autorizarles ver y registrar gastos.
+        Ingresa los correos de tu familia para autorizarles ver y registrar gastos compartidos.
       </p>
       <form id="formAddSharedUser" style="display: flex; gap: 8px; margin-bottom: 8px;">
         <input type="email" id="inputSharedEmail" placeholder="familiar@ejemplo.com" required />
@@ -805,18 +818,31 @@
   <div id="appContainer" class="hidden">
     <div id="alertBanner" class="alert-banner"></div>
 
-    <!-- Barra de Filtro Temporal -->
+    <!-- Barra de Filtros (Espacio + Tiempo) -->
     <div class="filter-bar">
-      <div class="filter-group">
-        <label style="font-size: 0.8rem;">📅 Filtrar Vista Por:</label>
-        <select id="timeFilter">
-          <option value="month" selected>Este Mes</option>
-          <option value="day">Hoy (Día)</option>
-          <option value="week">Esta Semana</option>
-          <option value="year">Este Año</option>
-          <option value="all">Todos los Tiempos</option>
-        </select>
+      <div class="filter-group-container">
+        <!-- Selector de Espacio (Personal vs Familiar) -->
+        <div class="filter-group">
+          <label style="font-size: 0.8rem;">📁 Vista Activa:</label>
+          <select id="scopeFilter" style="border-color: var(--accent-blue); font-weight: 600;">
+            <option value="family" selected>🏠 Finanzas Familiares / Compartidas</option>
+            <option value="personal">👤 Mis Finanzas Personales (Privadas)</option>
+          </select>
+        </div>
+
+        <!-- Selector de Período -->
+        <div class="filter-group">
+          <label style="font-size: 0.8rem;">📅 Período:</label>
+          <select id="timeFilter">
+            <option value="month" selected>Este Mes</option>
+            <option value="day">Hoy (Día)</option>
+            <option value="week">Esta Semana</option>
+            <option value="year">Este Año</option>
+            <option value="all">Todos los Tiempos</option>
+          </select>
+        </div>
       </div>
+
       <div style="font-size: 0.8rem; color: var(--text-muted);" id="txtFilterRange">
         Mostrando gastos de este mes
       </div>
@@ -834,7 +860,7 @@
     <!-- Dashboard Superior -->
     <div class="dashboard">
       <div class="widget">
-        <h4>Fondo / Presupuesto Inicial</h4>
+        <h4 id="lblPresupuestoTitle">Fondo Inicial (Familiar)</h4>
         
         <div id="viewPresupuestoContainer" style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
           <div class="amount" id="txtPresupuesto">$ 0,00</div>
@@ -876,6 +902,15 @@
           <div class="panel-title" id="formTitle">➕ Registrar Nuevo Gasto</div>
           <form id="expenseForm">
             <input type="hidden" id="editingExpenseId" value="" />
+
+            <!-- Selector del Espacio para el nuevo gasto -->
+            <div class="form-group">
+              <label>Guardar Gasto En</label>
+              <select id="expenseScope" required style="background: rgba(59, 130, 246, 0.1); border-color: var(--accent-blue); font-weight: 600;">
+                <option value="family" selected>🏠 Finanzas Familiares / Compartidas</option>
+                <option value="personal">👤 Mis Finanzas Personales (Privado)</option>
+              </select>
+            </div>
 
             <div class="form-group">
               <label>Monto ($ COP)</label>
@@ -953,6 +988,7 @@
             <thead>
               <tr>
                 <th>Fecha</th>
+                <th>Espacio</th>
                 <th>Categoría / Subcat.</th>
                 <th>Detalle</th>
                 <th>Pagado Por</th>
@@ -1006,6 +1042,7 @@
     let isSignUpMode = false;
     let presupuestoInicial = 0;
     let unsubscribeExpenses = null;
+    let unsubscribeBudget = null;
     let rawExpensesList = [];
     let currentExpensesList = [];
 
@@ -1108,14 +1145,12 @@
       const txtDate = document.getElementById('txtAmazonTRMDate');
 
       try {
-        // Obtenemos la TRM oficial de datos.gov.co
         const response = await fetch('https://www.datos.gov.co/resource/32sa-823r.json?$order=vigenciadesde\%20DESC&$limit=1');
         const data = await response.json();
 
         if (data && data.length > 0) {
           const trmOficial = parseFloat(data[0].valor);
-          // Amazon Currency Converter aplica un recargo promedio de conversor del ~3% sobre la TRM oficial
-          const margenAmazon = 1.03;
+          const margenAmazon = 1.03; 
           const tasaAmazonCOP = trmOficial * margenAmazon;
 
           const fechaVigencia = new Date(data[0].vigenciadesde).toLocaleDateString('es-CO', {
@@ -1139,54 +1174,18 @@
 
     // --- BASE DE DATOS DE CONSEJOS FINANCIEROS POR MES ---
     const consejosPorMes = {
-      0: {
-        titulo: "Enero: La cuesta de enero y planificación inicial",
-        texto: "Prioriza pagar las deudas acumuladas de fin de año. Es el momento perfecto para fijar el presupuesto anual de la familia y evitar gastos superfluos."
-      },
-      1: {
-        titulo: "Febrero: Matrículas y temporada escolar",
-        texto: "Monitorea los gastos de educación y útiles. Compara precios en compras al por mayor y destina un rubro fijo si tienes compromisos escolares."
-      },
-      2: {
-        titulo: "Marzo: Revisión del primer trimestre",
-        texto: "Revisa si estás cumpliendo tus metas de ahorro. Si has gastado más de lo planeado en estos meses, ajusta las categorías no esenciales."
-      },
-      3: {
-        titulo: "Abril: Preparación para pagos de impuestos",
-        texto: "Mes clave para revisar obligaciones fiscales e impuestos (predial, vehicular, etc.). Guarda un fondo de reserva para evitar tomar créditos de última hora."
-      },
-      4: {
-        titulo: "Mayo: Gastos festivos y presupuestos familiares",
-        texto: "Planea las celebraciones familiares con antelación. Establece un tope máximo para regalos o reuniones para no afectar la liquidez del mes."
-      },
-      5: {
-        titulo: "Junio: Prima de mitad de año y ahorro",
-        texto: "Si recibes prima o ingresos adicionales, destina al menos un 30% al ahorro o a saldar deudas de alto interés antes de planear vacaciones."
-      },
-      6: {
-        titulo: "Julio: Temporada de receso y vacaciones",
-        texto: "Disfruta las actividades de vacaciones ajustándote strictly al presupuesto de ocio. Prefiere planes locales o reservas anticipadas."
-      },
-      7: {
-        titulo: "Agosto: Declaración de renta e imprevistos",
-        texto: "Verifica las fechas de vencimiento de la declaración de renta y seguros. Mantén al día tu fondo de emergencias para imprevistos mecánicos o médicos."
-      },
-      8: {
-        titulo: "Septiembre: Consolidación y control de deudas",
-        texto: "Evita diferir compras corrientes a muchas cuotas en tarjeta de crédito. Aprovecha este mes tranquilo para acelerar abonos a capital."
-      },
-      9: {
-        titulo: "Octubre: Planificación anticipada de fin de año",
-        texto: "Empieza a cotizar compras navideñas o viajes de fin de año. Comprar con anticipación te protege del aumento de precios de temporada."
-      },
-      10: {
-        titulo: "Noviembre: Aprovecha ofertas con responsabilidad",
-        texto: "En meses de descuentos masivos, compra solo lo que esté en tu lista presupuestada. No adquieras compromisos financieros que comprometan tus finanzas futuras."
-      },
-      11: {
-        titulo: "Diciembre: Presupuesto navideño y prima de navidad",
-        texto: "Asigna un monto fijo a regalos y cenas de fin de año. Procura destinar una parte importante de tus ingresos de fin de año a iniciar enero con tranquilidad."
-      }
+      0: { titulo: "Enero: La cuesta de enero y planificación inicial", texto: "Prioriza pagar las deudas acumuladas de fin de año. Es el momento perfecto para fijar el presupuesto anual de la familia y evitar gastos superfluos." },
+      1: { titulo: "Febrero: Matrículas y temporada escolar", texto: "Monitorea los gastos de educación y útiles. Compara precios en compras al por mayor y destina un rubro fijo si tienes compromisos escolares." },
+      2: { titulo: "Marzo: Revisión del primer trimestre", texto: "Revisa si estás cumpliendo tus metas de ahorro. Si has gastado más de lo planeado en estos meses, ajusta las categorías no esenciales." },
+      3: { titulo: "Abril: Preparación para pagos de impuestos", texto: "Mes clave para revisar obligaciones fiscales e impuestos (predial, vehicular, etc.). Guarda un fondo de reserva para evitar tomar créditos de última hora." },
+      4: { titulo: "Mayo: Gastos festivos y presupuestos familiares", texto: "Planea las celebraciones familiares con antelación. Establece un tope máximo para regalos o reuniones para no afectar la liquidez del mes." },
+      5: { titulo: "Junio: Prima de mitad de año y ahorro", texto: "Si recibes prima o ingresos adicionales, destina al menos un 30% al ahorro o a saldar deudas de alto interés antes de planear vacaciones." },
+      6: { titulo: "Julio: Temporada de receso y vacaciones", texto: "Disfruta las actividades de vacaciones ajustándote estrictamente al presupuesto de ocio. Prefiere planes locales o reservas anticipadas." },
+      7: { titulo: "Agosto: Declaración de renta e imprevistos", texto: "Verifica las fechas de vencimiento de la declaración de renta y seguros. Mantén al día tu fondo de emergencias para imprevistos mecánicos o médicos." },
+      8: { titulo: "Septiembre: Consolidación y control de deudas", texto: "Evita diferir compras corrientes a muchas cuotas en tarjeta de crédito. Aprovecha este mes tranquilo para acelerar abonos a capital." },
+      9: { titulo: "Octubre: Planificación anticipada de fin de año", texto: "Empieza a cotizar compras navideñas o viajes de fin de año. Comprar con anticipación te protege del aumento de precios de temporada." },
+      10: { titulo: "Noviembre: Aprovecha ofertas con responsabilidad", texto: "En meses de descuentos masivos, compra solo lo que esté en tu lista presupuestada. No adquieras compromisos financieros que comprometan tus finanzas futuras." },
+      11: { titulo: "Diciembre: Presupuesto navideño y prima de navidad", texto: "Asigna un monto fijo a regalos y cenas de fin de año. Procura destinar una parte importante de tus ingresos de fin de año a iniciar enero con tranquilidad." }
     };
 
     function mostrarConsejoMes(mesNumero) {
@@ -1241,6 +1240,7 @@
         currentUser = null;
         currentFamilyOwnerId = null;
         if (unsubscribeExpenses) unsubscribeExpenses();
+        if (unsubscribeBudget) unsubscribeBudget();
         document.getElementById('authContainer').classList.remove('hidden');
         document.getElementById('appContainer').classList.add('hidden');
         document.getElementById('userHeader').classList.add('hidden');
@@ -1440,10 +1440,18 @@
 
     document.getElementById('btnLogout').addEventListener('click', () => signOut(auth));
 
-    // --- MANEJO DE PRESUPUESTO AISLADO POR GRUPO ---
+    // --- MANEJO DE PRESUPUESTO ADAPTABLE (PERSONAL O FAMILIAR) ---
     function escucharPresupuesto() {
-      if (!currentFamilyOwnerId) return;
-      onSnapshot(doc(db, "config", currentFamilyOwnerId), (docSnap) => {
+      if (!currentUser) return;
+      if (unsubscribeBudget) unsubscribeBudget();
+
+      const scope = document.getElementById('scopeFilter').value;
+      const docId = scope === 'personal' ? currentUser.uid : currentFamilyOwnerId;
+      const docRef = doc(db, scope === 'personal' ? "config_personal" : "config", docId);
+
+      document.getElementById('lblPresupuestoTitle').textContent = scope === 'personal' ? "Fondo Inicial (Personal)" : "Fondo Inicial (Familiar)";
+
+      unsubscribeBudget = onSnapshot(docRef, (docSnap) => {
         if (docSnap.exists()) {
           presupuestoInicial = docSnap.data().monto || 0;
         } else {
@@ -1467,9 +1475,13 @@
 
     document.getElementById('btnFijarPresupuesto').addEventListener('click', async () => {
       const val = parseFloat(document.getElementById('inputPresupuesto').value);
-      if (!isNaN(val) && val >= 0 && currentFamilyOwnerId) {
+      const scope = document.getElementById('scopeFilter').value;
+      const docId = scope === 'personal' ? currentUser.uid : currentFamilyOwnerId;
+      const docRef = doc(db, scope === 'personal' ? "config_personal" : "config", docId);
+
+      if (!isNaN(val) && val >= 0) {
         try {
-          await setDoc(doc(db, "config", currentFamilyOwnerId), {
+          await setDoc(docRef, {
             monto: val,
             updatedAt: new Date()
           });
@@ -1482,7 +1494,7 @@
       }
     });
 
-    // --- FILTRADO DE GASTOS Y LOGICA TEMPORAL ---
+    // --- FILTRADO DE GASTOS Y LOGICA TEMPORAL/ESPACIAL ---
     window.eliminarGasto = async (id) => {
       if (confirm("¿Estás seguro de que deseas eliminar este gasto?")) {
         try {
@@ -1501,6 +1513,7 @@
       if (!gasto) return;
 
       document.getElementById('editingExpenseId').value = gasto.id;
+      document.getElementById('expenseScope').value = gasto.scope || 'family';
       document.getElementById('amount').value = gasto.amount;
       document.getElementById('category').value = gasto.category;
       
@@ -1541,9 +1554,26 @@
 
     function escucharCambios() {
       if (unsubscribeExpenses) unsubscribeExpenses();
-      if (!currentFamilyOwnerId) return;
+      if (!currentUser) return;
 
-      const q = query(collection(db, "expenses"), where("familyOwnerId", "==", currentFamilyOwnerId));
+      const activeScope = document.getElementById('scopeFilter').value;
+      let q;
+
+      if (activeScope === 'personal') {
+        // Consultar únicamente los gastos personales creados por el usuario actual
+        q = query(
+          collection(db, "expenses"), 
+          where("scope", "==", "personal"),
+          where("createdByUid", "==", currentUser.uid)
+        );
+      } else {
+        // Consultar los gastos del grupo familiar
+        q = query(
+          collection(db, "expenses"), 
+          where("familyOwnerId", "==", currentFamilyOwnerId),
+          where("scope", "==", "family")
+        );
+      }
 
       unsubscribeExpenses = onSnapshot(q, (snapshot) => {
         const gastos = [];
@@ -1573,6 +1603,7 @@
 
     function aplicarFiltroTiempo() {
       const mode = document.getElementById('timeFilter').value;
+      const activeScope = document.getElementById('scopeFilter').value;
       const now = new Date();
       const txtRange = document.getElementById('txtFilterRange');
 
@@ -1637,18 +1668,25 @@
     }
 
     document.getElementById('timeFilter').addEventListener('change', aplicarFiltroTiempo);
+    document.getElementById('scopeFilter').addEventListener('change', () => {
+      escucharPresupuesto();
+    });
 
     function actualizarUI(gastos, totalGastado, categoriasMap) {
       const tbody = document.getElementById('tablaGastos');
       tbody.innerHTML = '';
 
       if (gastos.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 20px;">No se encontraron gastos registrados en este período.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 20px;">No se encontraron gastos registrados en este espacio/período.</td></tr>`;
       } else {
         gastos.forEach(g => {
+          const badgeScopeClass = g.scope === 'personal' ? 'badge-scope-personal' : 'badge-scope-family';
+          const badgeScopeText = g.scope === 'personal' ? '👤 Personal' : '🏠 Familiar';
+
           tbody.innerHTML += `
             <tr>
               <td>${g.date || ''}</td>
+              <td><span class="badge ${badgeScopeClass}">${badgeScopeText}</span></td>
               <td>
                 <strong>${g.category}</strong><br>
                 <span class="badge">${g.subcategory || 'Sin subcategoría'}</span>
@@ -1726,8 +1764,10 @@
       e.preventDefault();
 
       const editingId = document.getElementById('editingExpenseId').value;
+      const scopeValue = document.getElementById('expenseScope').value;
 
       const gastoData = {
+        scope: scopeValue,
         amount: parseFloat(document.getElementById('amount').value),
         category: document.getElementById('category').value,
         subcategory: document.getElementById('subcategory').value,
@@ -1736,6 +1776,7 @@
         method: document.getElementById('method').value,
         date: document.getElementById('date').value,
         familyOwnerId: currentFamilyOwnerId,
+        createdByUid: currentUser ? currentUser.uid : 'invitado',
         updatedAt: new Date()
       };
 
