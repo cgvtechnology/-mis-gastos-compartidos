@@ -1552,7 +1552,7 @@
 
     document.getElementById('btnCancelEditExpense').addEventListener('click', cancelarEdicionGasto);
 
-    function escucharCambios() {
+   function escucharCambios() {
       if (unsubscribeExpenses) unsubscribeExpenses();
       if (!currentUser) return;
 
@@ -1560,18 +1560,17 @@
       let q;
 
       if (activeScope === 'personal') {
-        // Consultar únicamente los gastos personales creados por el usuario actual
+        // Consultar únicamente los gastos explícitamente personales
         q = query(
           collection(db, "expenses"), 
           where("scope", "==", "personal"),
           where("createdByUid", "==", currentUser.uid)
         );
       } else {
-        // Consultar los gastos del grupo familiar
+        // Consultar los gastos del grupo familiar (incluyendo los anteriores que no tenían 'scope')
         q = query(
           collection(db, "expenses"), 
-          where("familyOwnerId", "==", currentFamilyOwnerId),
-          where("scope", "==", "family")
+          where("familyOwnerId", "==", currentFamilyOwnerId)
         );
       }
 
@@ -1580,6 +1579,12 @@
 
         snapshot.forEach((docSnap) => {
           const data = docSnap.data();
+          
+          // Si estamos en vista familiar, filtramos para omitir solo los que sean explícitamente personales
+          if (activeScope === 'family' && data.scope === 'personal') {
+            return;
+          }
+
           gastos.push({ id: docSnap.id, ...data });
         });
 
