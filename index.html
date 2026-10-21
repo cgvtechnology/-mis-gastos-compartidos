@@ -346,7 +346,7 @@
 
     @media (min-width: 640px) {
       .dashboard {
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 16px;
         margin-bottom: 24px;
       }
@@ -857,6 +857,13 @@
         <div class="amount" id="txtMayorGasto">N/A</div>
         <span class="badge" id="txtMontoMayorGasto">$ 0,00</span>
       </div>
+
+      <!-- WIDGET DEL DÓLAR (TRM COLOMBIA) -->
+      <div class="widget" style="border-color: rgba(16, 185, 129, 0.4);">
+        <h4>💵 Dólar Hoy (TRM Colombia)</h4>
+        <div class="amount" id="txtTRMValue" style="color: var(--accent-green);">$ ---,--</div>
+        <span class="badge" id="txtTRMDate">Actualizando TRM...</span>
+      </div>
     </div>
 
     <!-- Layout Principal -->
@@ -1094,6 +1101,36 @@
       ]
     };
 
+    // --- CONSUMO DE API TRM DÓLAR COLOMBIA EN TIEMPO REAL ---
+    async function obtenerTRMDolarColombia() {
+      const txtValue = document.getElementById('txtTRMValue');
+      const txtDate = document.getElementById('txtTRMDate');
+
+      try {
+        const response = await fetch('https://www.datos.gov.co/resource/32sa-823r.json?$order=vigenciadesde\%20DESC&$limit=1');
+        const data = await response.json();
+
+        if (data && data.length > 0) {
+          const valorTRM = parseFloat(data[0].valor);
+          const fechaVigencia = new Date(data[0].vigenciadesde).toLocaleDateString('es-CO', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric'
+          });
+
+          txtValue.textContent = formatearCOP(valorTRM) + ' COP';
+          txtDate.textContent = `Actualizado: ${fechaVigencia}`;
+        } else {
+          txtValue.textContent = '$ 4.150,00 COP';
+          txtDate.textContent = 'TRM Estimada';
+        }
+      } catch (err) {
+        console.warn("No se pudo obtener la TRM en vivo, usando valor alternativo:", err);
+        txtValue.textContent = '$ 4.150,00 COP';
+        txtDate.textContent = 'Valor aproximado';
+      }
+    }
+
     // --- BASE DE DATOS DE CONSEJOS FINANCIEROS POR MES ---
     const consejosPorMes = {
       0: {
@@ -1138,7 +1175,7 @@
       },
       10: {
         titulo: "Noviembre: Aprovecha ofertas con responsabilidad",
-        texto: "En meses de descuentos masivos, compra solo lo que esté en tu lista presupuestada. No adquieras compromisos financieros que comprometan tu 2027."
+        texto: "En meses de descuentos masivos, compra solo lo que esté en tu lista presupuestada. No adquieras compromisos financieros que comprometan tus finanzas futuras."
       },
       11: {
         titulo: "Diciembre: Presupuesto navideño y prima de navidad",
@@ -1193,6 +1230,7 @@
 
         await resolverGrupoFamiliar();
         escucharPresupuesto();
+        obtenerTRMDolarColombia();
       } else {
         currentUser = null;
         currentFamilyOwnerId = null;
@@ -1575,7 +1613,6 @@
         txtRange.innerText = `Mostrando todos los gastos históricos (${filtered.length} registros)`;
       }
 
-      // Actualizar consejo dinámico según el mes activo
       mostrarConsejoMes(mesConsultado);
 
       currentExpensesList = filtered;
