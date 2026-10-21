@@ -268,6 +268,37 @@
       color: #f87171;
     }
 
+    /* Banner de Consejos Financieros */
+    .advice-banner {
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid var(--accent-blue);
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .advice-icon {
+      font-size: 1.5rem;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+
+    .advice-content h5 {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--accent-blue);
+      margin-bottom: 4px;
+    }
+
+    .advice-content p {
+      font-size: 0.82rem;
+      color: var(--text-main);
+      line-height: 1.4;
+    }
+
     /* Barra de Filtro de Tiempo */
     .filter-bar {
       background: var(--card-bg);
@@ -790,6 +821,15 @@
       </div>
     </div>
 
+    <!-- Banner de Consejos Financieros Dinámicos -->
+    <div class="advice-banner">
+      <div class="advice-icon">💡</div>
+      <div class="advice-content">
+        <h5 id="adviceTitle">Consejo Financiero del Mes</h5>
+        <p id="adviceText">Cargando sugerencia financiera...</p>
+      </div>
+    </div>
+
     <!-- Dashboard Superior -->
     <div class="dashboard">
       <div class="widget">
@@ -958,8 +998,8 @@
     let isSignUpMode = false;
     let presupuestoInicial = 0;
     let unsubscribeExpenses = null;
-    let rawExpensesList = []; // Todos los gastos traídos de Firestore
-    let currentExpensesList = []; // Gastos filtrados por tiempo
+    let rawExpensesList = [];
+    let currentExpensesList = [];
 
     const subcategorias = {
       "Alimentación": [
@@ -1053,6 +1093,64 @@
         "Gastos Varios"
       ]
     };
+
+    // --- BASE DE DATOS DE CONSEJOS FINANCIEROS POR MES ---
+    const consejosPorMes = {
+      0: {
+        titulo: "Enero: La cuesta de enero y planificación inicial",
+        texto: "Prioriza pagar las deudas acumuladas de fin de año. Es el momento perfecto para fijar el presupuesto anual de la familia y evitar gastos superfluos."
+      },
+      1: {
+        titulo: "Febrero: Matrículas y temporada escolar",
+        texto: "Monitorea los gastos de educación y útiles. Compara precios en compras al por mayor y destina un rubro fijo si tienes compromisos escolares."
+      },
+      2: {
+        titulo: "Marzo: Revisión del primer trimestre",
+        texto: "Revisa si estás cumpliendo tus metas de ahorro. Si has gastado más de lo planeado en estos meses, ajusta las categorías no esenciales."
+      },
+      3: {
+        titulo: "Abril: Preparación para pagos de impuestos",
+        texto: "Mes clave para revisar obligaciones fiscales e impuestos (predial, vehicular, etc.). Guarda un fondo de reserva para evitar tomar créditos de última hora."
+      },
+      4: {
+        titulo: "Mayo: Gastos festivos y presupuestos familiares",
+        texto: "Planea las celebraciones familiares con antelación. Establece un tope máximo para regalos o reuniones para no afectar la liquidez del mes."
+      },
+      5: {
+        titulo: "Junio: Prima de mitad de año y ahorro",
+        texto: "Si recibes prima o ingresos adicionales, destina al menos un 30% al ahorro o a saldar deudas de alto interés antes de planear vacaciones."
+      },
+      6: {
+        titulo: "Julio: Temporada de receso y vacaciones",
+        texto: "Disfruta las actividades de vacaciones ajustándote estrictamente al presupuesto de ocio. Prefiere planes locales o reservas anticipadas."
+      },
+      7: {
+        titulo: "Agosto: Declaración de renta e imprevistos",
+        texto: "Verifica las fechas de vencimiento de la declaración de renta y seguros. Mantén al día tu fondo de emergencias para imprevistos mecánicos o médicos."
+      },
+      8: {
+        titulo: "Septiembre: Consolidación y control de deudas",
+        texto: "Evita diferir compras corrientes a muchas cuotas en tarjeta de crédito. Aprovecha este mes tranquilo para acelerar abonos a capital."
+      },
+      9: {
+        titulo: "Octubre: Planificación anticipada de fin de año",
+        texto: "Empieza a cotizar compras navideñas o viajes de fin de año. Comprar con anticipación te protege del aumento de precios de temporada."
+      },
+      10: {
+        titulo: "Noviembre: Aprovecha ofertas con responsabilidad",
+        texto: "En meses de descuentos masivos, compra solo lo que esté en tu lista presupuestada. No adquieras compromisos financieros que comprometan tu 2027."
+      },
+      11: {
+        titulo: "Diciembre: Presupuesto navideño y prima de navidad",
+        texto: "Asigna un monto fijo a regalos y cenas de fin de año. Procura destinar una parte importante de tus ingresos de fin de año a iniciar enero con tranquilidad."
+      }
+    };
+
+    function mostrarConsejoMes(mesNumero) {
+      const consejo = consejosPorMes[mesNumero] || consejosPorMes[new Date().getMonth()];
+      document.getElementById('adviceTitle').textContent = consejo.titulo;
+      document.getElementById('adviceText').textContent = consejo.texto;
+    }
 
     const formatearCOP = (valor) => {
       return new Intl.NumberFormat('es-CO', {
@@ -1411,7 +1509,6 @@
           gastos.push({ id: docSnap.id, ...data });
         });
 
-        // Ordenamiento Cronológico Inverso por defecto
         gastos.sort((a, b) => {
           const dateA = new Date((a.date || '1970-01-01') + 'T00:00:00');
           const dateB = new Date((b.date || '1970-01-01') + 'T00:00:00');
@@ -1430,13 +1527,13 @@
       });
     }
 
-    // Filtra la lista de gastos segun la opcion seleccionada (Día, Semana, Mes, Año, Todos)
     function aplicarFiltroTiempo() {
       const mode = document.getElementById('timeFilter').value;
       const now = new Date();
       const txtRange = document.getElementById('txtFilterRange');
 
       let filtered = [];
+      let mesConsultado = now.getMonth();
 
       if (mode === 'day') {
         const todayStr = now.toISOString().split('T')[0];
@@ -1477,6 +1574,9 @@
         filtered = [...rawExpensesList];
         txtRange.innerText = `Mostrando todos los gastos históricos (${filtered.length} registros)`;
       }
+
+      // Actualizar consejo dinámico según el mes activo
+      mostrarConsejoMes(mesConsultado);
 
       currentExpensesList = filtered;
 
@@ -1543,7 +1643,6 @@
         }
       }
 
-      // Cálculo de Mayor Categoría y Renderizado del Desglose por Categorías
       let mayorCat = 'N/A';
       let maxMonto = 0;
       const categorySummaryContainer = document.getElementById('categorySummaryContainer');
@@ -1580,7 +1679,6 @@
       document.getElementById('txtMontoMayorGasto').innerText = formatearCOP(maxMonto);
     }
 
-    // Guardar (Agregar o Actualizar) gasto asignando el grupo familiar correspondiente
     document.getElementById('expenseForm').addEventListener('submit', async (e) => {
       e.preventDefault();
 
@@ -1616,7 +1714,6 @@
 
     document.getElementById('category').addEventListener('change', actualizarSubcategorias);
 
-    // Carga inicial
     actualizarSubcategorias();
     document.getElementById('date').valueAsDate = new Date();
   </script>
