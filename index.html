@@ -993,29 +993,25 @@
       }
     });
 
-    // Asigna si el usuario tiene su propia cuenta o es un familiar invitado
     async function resolverGrupoFamiliar() {
       if (!currentUser) return;
 
       const myEmail = currentUser.email ? currentUser.email.toLowerCase() : null;
 
-      // Asegurar que el documento propio del usuario exista en Firestore
       const userDocRef = doc(db, "users", currentUser.uid);
       const userSnap = await getDoc(userDocRef);
       if (!userSnap.exists()) {
         await setDoc(userDocRef, { email: myEmail, sharedWith: [] }, { merge: true });
       }
 
-      currentFamilyOwnerId = currentUser.uid; // Por defecto: Dueño de sus finanzas
+      currentFamilyOwnerId = currentUser.uid;
 
-      // Verificar si un tercero invitó a este correo
       if (myEmail) {
         try {
           const qOwner = query(collection(db, "users"), where("sharedWith", "array-contains", myEmail));
           const querySnapshot = await getDocs(qOwner);
 
           if (!querySnapshot.empty) {
-            // Se vincula al primer dueño que haya registrado este correo
             currentFamilyOwnerId = querySnapshot.docs[0].id;
           }
         } catch (err) {
@@ -1231,7 +1227,7 @@
       }
     });
 
-    // --- FILTRADO DE GASTOS POR GRUPO FAMILIAR ---
+    // --- FILTRADO DE GASTOS Y ORDENAMIENTO CRONOLÓGICO ---
     window.eliminarGasto = async (id) => {
       if (confirm("¿Estás seguro de que deseas eliminar este gasto?")) {
         try {
@@ -1308,6 +1304,21 @@
 
           const cat = data.category || 'Otros';
           categoriasMap[cat] = (categoriasMap[cat] || 0) + monto;
+        });
+
+        // Ordenamiento Cronológico Inverso: primero la fecha ingresada más reciente
+        // Si las fechas son iguales, se ordena por la hora exacta de creación (createdAt)
+        gastos.sort((a, b) => {
+          const dateA = new Date(a.date || 0);
+          const dateB = new Date(b.date || 0);
+
+          if (dateB - dateA !== 0) {
+            return dateB - dateA;
+          }
+
+          const timeA = a.createdAt?.seconds || 0;
+          const timeB = b.createdAt?.seconds || 0;
+          return timeB - timeA;
         });
 
         currentExpensesList = gastos;
