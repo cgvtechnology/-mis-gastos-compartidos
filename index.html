@@ -268,6 +268,43 @@
       color: #f87171;
     }
 
+    /* Barra de Filtro de Tiempo */
+    .filter-bar {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+    }
+
+    @media (min-width: 480px) {
+      .filter-group {
+        width: auto;
+      }
+    }
+
+    .filter-group label {
+      margin-bottom: 0;
+      white-space: nowrap;
+    }
+
+    .filter-group select {
+      padding: 8px 12px;
+      font-size: 0.85rem;
+    }
+
     /* Widgets Superiores */
     .dashboard {
       display: grid;
@@ -736,6 +773,23 @@
   <div id="appContainer" class="hidden">
     <div id="alertBanner" class="alert-banner"></div>
 
+    <!-- Barra de Filtro Temporal -->
+    <div class="filter-bar">
+      <div class="filter-group">
+        <label style="font-size: 0.8rem;">📅 Filtrar Vista Por:</label>
+        <select id="timeFilter">
+          <option value="month" selected>Este Mes</option>
+          <option value="day">Hoy (Día)</option>
+          <option value="week">Esta Semana</option>
+          <option value="year">Este Año</option>
+          <option value="all">Todos los Tiempos</option>
+        </select>
+      </div>
+      <div style="font-size: 0.8rem; color: var(--text-muted);" id="txtFilterRange">
+        Mostrando gastos de este mes
+      </div>
+    </div>
+
     <!-- Dashboard Superior -->
     <div class="dashboard">
       <div class="widget">
@@ -904,7 +958,8 @@
     let isSignUpMode = false;
     let presupuestoInicial = 0;
     let unsubscribeExpenses = null;
-    let currentExpensesList = [];
+    let rawExpensesList = []; // Todos los gastos traídos de Firestore
+    let currentExpensesList = []; // Gastos filtrados por tiempo
 
     const subcategorias = {
       "Alimentación": [
@@ -1285,7 +1340,7 @@
       }
     });
 
-    // --- FILTRADO DE GASTOS Y ORDENAMIENTO CRONOLÓGICO ---
+    // --- FILTRADO DE GASTOS Y LOGICA TEMPORAL ---
     window.eliminarGasto = async (id) => {
       if (confirm("¿Estás seguro de que deseas eliminar este gasto?")) {
         try {
@@ -1300,7 +1355,7 @@
     };
 
     window.prepararEdicionGasto = (id) => {
-      const gasto = currentExpensesList.find(g => g.id === id);
+      const gasto = rawExpensesList.find(g => g.id === id);
       if (!gasto) return;
 
       document.getElementById('editingExpenseId').value = gasto.id;
@@ -1350,24 +1405,16 @@
 
       unsubscribeExpenses = onSnapshot(q, (snapshot) => {
         const gastos = [];
-        let totalGastado = 0;
-        const categoriasMap = {};
 
         snapshot.forEach((docSnap) => {
           const data = docSnap.data();
           gastos.push({ id: docSnap.id, ...data });
-
-          const monto = parseFloat(data.amount) || 0;
-          totalGastado += monto;
-
-          const cat = data.category || 'Otros Gastos';
-          categoriasMap[cat] = (categoriasMap[cat] || 0) + monto;
         });
 
-        // Ordenamiento Cronológico Inverso
+        // Ordenamiento Cronológico Inverso por defecto
         gastos.sort((a, b) => {
-          const dateA = new Date(a.date || 0);
-          const dateB = new Date(b.date || 0);
+          const dateA = new Date((a.date || '1970-01-01') + 'T00:00:00');
+          const dateB = new Date((b.date || '1970-01-01') + 'T00:00:00');
 
           if (dateB - dateA !== 0) {
             return dateB - dateA;
@@ -1378,36 +1425,105 @@
           return timeB - timeA;
         });
 
-        currentExpensesList = gastos;
-        actualizarUI(gastos, totalGastado, categoriasMap);
+        rawExpensesList = gastos;
+        aplicarFiltroTiempo();
       });
     }
+
+    // Filtra la lista de gastos segun la opcion seleccionada (Día, Semana, Mes, Año, Todos)
+    function aplicarFiltroTiempo() {
+      const mode = document.getElementById('timeFilter').value;
+      const now = new Date();
+      const txtRange = document.getElementById('txtFilterRange');
+
+      let filtered = [];
+
+      if (mode === 'day') {
+        const todayStr = now.toISOString().split('T')[0];
+        filtered = rawExpensesList.filter(g => g.date === todayStr);
+        txtRange.innerText = `Mostrando gastos de hoy (${todayStr})`;
+      } else if (mode === 'week') {
+        const curr = new Date();
+        const day = curr.getDay();
+        const diffToMonday = curr.getDate() - day + (day === 0 ? -6 : 1); 
+        const monday = new Date(curr.setDate(diffToMonday));
+        monday.setHours(0,0,0,0);
+
+        filtered = rawExpensesList.filter(g => {
+          if (!g.date) return false;
+          const gDate = new Date(g.date + 'T00:00:00');
+          return gDate >= monday && gDate <= new Date();
+        });
+        txtRange.innerText = `Mostrando gastos desde el lunes ${monday.toISOString().split('T')[0]}`;
+      } else if (mode === 'month') {
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth();
+
+        filtered = rawExpensesList.filter(g => {
+          if (!g.date) return false;
+          const [y, m] = g.date.split('-').map(Number);
+          return y === currentYear && (m - 1) === currentMonth;
+        });
+        txtRange.innerText = `Mostrando gastos del mes actual (${now.toLocaleString('es-ES', { month: 'long', year: 'numeric' })})`;
+      } else if (mode === 'year') {
+        const currentYear = now.getFullYear();
+        filtered = rawExpensesList.filter(g => {
+          if (!g.date) return false;
+          const y = parseInt(g.date.split('-')[0]);
+          return y === currentYear;
+        });
+        txtRange.innerText = `Mostrando gastos del año ${currentYear}`;
+      } else {
+        filtered = [...rawExpensesList];
+        txtRange.innerText = `Mostrando todos los gastos históricos (${filtered.length} registros)`;
+      }
+
+      currentExpensesList = filtered;
+
+      let totalGastado = 0;
+      const categoriasMap = {};
+
+      filtered.forEach(g => {
+        const monto = parseFloat(g.amount) || 0;
+        totalGastado += monto;
+        const cat = g.category || 'Otros Gastos';
+        categoriasMap[cat] = (categoriasMap[cat] || 0) + monto;
+      });
+
+      actualizarUI(filtered, totalGastado, categoriasMap);
+    }
+
+    document.getElementById('timeFilter').addEventListener('change', aplicarFiltroTiempo);
 
     function actualizarUI(gastos, totalGastado, categoriasMap) {
       const tbody = document.getElementById('tablaGastos');
       tbody.innerHTML = '';
 
-      gastos.forEach(g => {
-        tbody.innerHTML += `
-          <tr>
-            <td>${g.date || ''}</td>
-            <td>
-              <strong>${g.category}</strong><br>
-              <span class="badge">${g.subcategory || 'Sin subcategoría'}</span>
-            </td>
-            <td>${g.description}</td>
-            <td>${g.payer}</td>
-            <td>${g.method}</td>
-            <td><strong>${formatearCOP(g.amount)}</strong></td>
-            <td>
-              <div class="action-buttons">
-                <button class="btn-edit-item" onclick="prepararEdicionGasto('${g.id}')" title="Editar gasto">✏️</button>
-                <button class="btn-delete" onclick="eliminarGasto('${g.id}')" title="Eliminar registro">🗑️</button>
-              </div>
-            </td>
-          </tr>
-        `;
-      });
+      if (gastos.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 20px;">No se encontraron gastos registrados en este período.</td></tr>`;
+      } else {
+        gastos.forEach(g => {
+          tbody.innerHTML += `
+            <tr>
+              <td>${g.date || ''}</td>
+              <td>
+                <strong>${g.category}</strong><br>
+                <span class="badge">${g.subcategory || 'Sin subcategoría'}</span>
+              </td>
+              <td>${g.description}</td>
+              <td>${g.payer}</td>
+              <td>${g.method}</td>
+              <td><strong>${formatearCOP(g.amount)}</strong></td>
+              <td>
+                <div class="action-buttons">
+                  <button class="btn-edit-item" onclick="prepararEdicionGasto('${g.id}')" title="Editar gasto">✏️</button>
+                  <button class="btn-delete" onclick="eliminarGasto('${g.id}')" title="Eliminar registro">🗑️</button>
+                </div>
+              </td>
+            </tr>
+          `;
+        });
+      }
 
       const disponible = presupuestoInicial - totalGastado;
       document.getElementById('txtPresupuesto').innerText = formatearCOP(presupuestoInicial);
@@ -1433,11 +1549,10 @@
       const categorySummaryContainer = document.getElementById('categorySummaryContainer');
       categorySummaryContainer.innerHTML = '';
 
-      // Ordenar las categorías de mayor a menor monto acumulado
       const sortedCategories = Object.entries(categoriasMap).sort((a, b) => b[1] - a[1]);
 
       if (sortedCategories.length === 0) {
-        categorySummaryContainer.innerHTML = `<span style="font-size: 0.85rem; color: var(--text-muted);">Aún no hay gastos registrados.</span>`;
+        categorySummaryContainer.innerHTML = `<span style="font-size: 0.85rem; color: var(--text-muted);">Sin gastos registrados en el filtro seleccionado.</span>`;
       } else {
         sortedCategories.forEach(([cat, monto]) => {
           if (monto > maxMonto) {
