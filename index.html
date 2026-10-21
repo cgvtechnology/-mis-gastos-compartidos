@@ -485,6 +485,53 @@
       border-color: var(--text-muted);
     }
 
+    /* Estilos para el Desglose por Categoría */
+    .category-summary-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .category-item {
+      background: var(--card-inner);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .category-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      font-size: 0.85rem;
+    }
+
+    .category-name {
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .category-total {
+      font-weight: 700;
+      color: var(--accent-blue);
+    }
+
+    .progress-bar-bg {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--accent-blue);
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+
     /* Tabla Adaptable */
     .table-container {
       width: 100%;
@@ -720,72 +767,83 @@
 
     <!-- Layout Principal -->
     <div class="main-grid">
-      <!-- Formulario Registro -->
-      <div class="panel" id="expenseFormPanel">
-        <div class="panel-title" id="formTitle">➕ Registrar Nuevo Gasto</div>
-        <form id="expenseForm">
-          <input type="hidden" id="editingExpenseId" value="" />
+      <!-- Columna Izquierda: Formulario + Resumen de Categorías -->
+      <div style="display: flex; flex-direction: column; gap: 20px;">
+        <!-- Formulario Registro -->
+        <div class="panel" id="expenseFormPanel">
+          <div class="panel-title" id="formTitle">➕ Registrar Nuevo Gasto</div>
+          <form id="expenseForm">
+            <input type="hidden" id="editingExpenseId" value="" />
 
-          <div class="form-group">
-            <label>Monto ($ COP)</label>
-            <input type="number" id="amount" step="0.01" min="0" placeholder="0.00" required />
-          </div>
+            <div class="form-group">
+              <label>Monto ($ COP)</label>
+              <input type="number" id="amount" step="0.01" min="0" placeholder="0.00" required />
+            </div>
 
-          <div class="form-group">
-            <label>Categoría</label>
-            <select id="category" required>
-              <option value="Alimentación">🛒 Alimentación</option>
-              <option value="Vivienda y Hogar">🏠 Vivienda y Hogar</option>
-              <option value="Transporte y Vehículos">🚗 Transporte y Vehículos</option>
-              <option value="Salud y Bienestar">🏥 Salud y Bienestar</option>
-              <option value="Educación y Desarrollo">🎓 Educación y Desarrollo</option>
-              <option value="Mascotas">🐾 Mascotas</option>
-              <option value="Entretenimiento y Ocio">🍿 Entretenimiento y Ocio</option>
-              <option value="Cuidado Personal y Ropa">👗 Cuidado Personal y Ropa</option>
-              <option value="Tecnología y Comunicaciones">📱 Tecnología y Comunicaciones</option>
-              <option value="Impuestos y Obligaciones">📜 Impuestos y Obligaciones</option>
-              <option value="Finanzas y Deudas">💳 Finanzas y Deudas</option>
-              <option value="Ahorro e Inversiones">📈 Ahorro e Inversiones</option>
-              <option value="Otros Gastos">📦 Otros Gastos</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label>Subcategoría</label>
-            <select id="subcategory" required></select>
-          </div>
-
-          <div class="form-group">
-            <label>Descripción / Detalle</label>
-            <input type="text" id="description" placeholder="Ej: Compra de almuerzo, peaje, consulta médica..." required />
-          </div>
-
-          <div class="form-group row">
-            <div>
-              <label>Método de Pago</label>
-              <select id="method">
-                <option value="Efectivo">Efectivo</option>
-                <option value="Tarjeta">Tarjeta</option>
-                <option value="Transferencia">Transferencia</option>
+            <div class="form-group">
+              <label>Categoría</label>
+              <select id="category" required>
+                <option value="Alimentación">🛒 Alimentación</option>
+                <option value="Vivienda y Hogar">🏠 Vivienda y Hogar</option>
+                <option value="Transporte y Vehículos">🚗 Transporte y Vehículos</option>
+                <option value="Salud y Bienestar">🏥 Salud y Bienestar</option>
+                <option value="Educación y Desarrollo">🎓 Educación y Desarrollo</option>
+                <option value="Mascotas">🐾 Mascotas</option>
+                <option value="Entretenimiento y Ocio">🍿 Entretenimiento y Ocio</option>
+                <option value="Cuidado Personal y Ropa">👗 Cuidado Personal y Ropa</option>
+                <option value="Tecnología y Comunicaciones">📱 Tecnología y Comunicaciones</option>
+                <option value="Impuestos y Obligaciones">📜 Impuestos y Obligaciones</option>
+                <option value="Finanzas y Deudas">💳 Finanzas y Deudas</option>
+                <option value="Ahorro e Inversiones">📈 Ahorro e Inversiones</option>
+                <option value="Otros Gastos">📦 Otros Gastos</option>
               </select>
             </div>
-            <div>
-              <label>Pagado Por</label>
-              <input type="text" id="payer" placeholder="Nombre" required />
+
+            <div class="form-group">
+              <label>Subcategoría</label>
+              <select id="subcategory" required></select>
             </div>
-          </div>
 
-          <div class="form-group">
-            <label>Fecha</label>
-            <input type="date" id="date" required />
-          </div>
+            <div class="form-group">
+              <label>Descripción / Detalle</label>
+              <input type="text" id="description" placeholder="Ej: Compra de almuerzo, peaje, consulta médica..." required />
+            </div>
 
-          <button type="submit" class="btn-submit" id="btnSubmitExpense">Guardar Gasto</button>
-          <button type="button" class="btn-cancel-edit hidden" id="btnCancelEditExpense">Cancelar Edición</button>
-        </form>
+            <div class="form-group row">
+              <div>
+                <label>Método de Pago</label>
+                <select id="method">
+                  <option value="Efectivo">Efectivo</option>
+                  <option value="Tarjeta">Tarjeta</option>
+                  <option value="Transferencia">Transferencia</option>
+                </select>
+              </div>
+              <div>
+                <label>Pagado Por</label>
+                <input type="text" id="payer" placeholder="Nombre" required />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Fecha</label>
+              <input type="date" id="date" required />
+            </div>
+
+            <button type="submit" class="btn-submit" id="btnSubmitExpense">Guardar Gasto</button>
+            <button type="button" class="btn-cancel-edit hidden" id="btnCancelEditExpense">Cancelar Edición</button>
+          </form>
+        </div>
+
+        <!-- Panel de Desglose de Totales por Categoría -->
+        <div class="panel">
+          <div class="panel-title">📊 Total Gastado por Categoría</div>
+          <div id="categorySummaryContainer" class="category-summary-list">
+            <!-- Carga dinámica -->
+          </div>
+        </div>
       </div>
 
-      <!-- Historial -->
+      <!-- Columna Derecha: Historial -->
       <div class="panel">
         <div class="panel-title">📋 Historial de Gastos</div>
         <div class="table-container">
@@ -1302,12 +1360,11 @@
           const monto = parseFloat(data.amount) || 0;
           totalGastado += monto;
 
-          const cat = data.category || 'Otros';
+          const cat = data.category || 'Otros Gastos';
           categoriasMap[cat] = (categoriasMap[cat] || 0) + monto;
         });
 
-        // Ordenamiento Cronológico Inverso: primero la fecha ingresada más reciente
-        // Si las fechas son iguales, se ordena por la hora exacta de creación (createdAt)
+        // Ordenamiento Cronológico Inverso
         gastos.sort((a, b) => {
           const dateA = new Date(a.date || 0);
           const dateB = new Date(b.date || 0);
@@ -1370,14 +1427,40 @@
         }
       }
 
+      // Cálculo de Mayor Categoría y Renderizado del Desglose por Categorías
       let mayorCat = 'N/A';
       let maxMonto = 0;
-      for (const [cat, monto] of Object.entries(categoriasMap)) {
-        if (monto > maxMonto) {
-          maxMonto = monto;
-          mayorCat = cat;
-        }
+      const categorySummaryContainer = document.getElementById('categorySummaryContainer');
+      categorySummaryContainer.innerHTML = '';
+
+      // Ordenar las categorías de mayor a menor monto acumulado
+      const sortedCategories = Object.entries(categoriasMap).sort((a, b) => b[1] - a[1]);
+
+      if (sortedCategories.length === 0) {
+        categorySummaryContainer.innerHTML = `<span style="font-size: 0.85rem; color: var(--text-muted);">Aún no hay gastos registrados.</span>`;
+      } else {
+        sortedCategories.forEach(([cat, monto]) => {
+          if (monto > maxMonto) {
+            maxMonto = monto;
+            mayorCat = cat;
+          }
+
+          const pctOfTotal = totalGastado > 0 ? ((monto / totalGastado) * 100).toFixed(1) : 0;
+
+          categorySummaryContainer.innerHTML += `
+            <div class="category-item">
+              <div class="category-item-header">
+                <span class="category-name">${cat}</span>
+                <span class="category-total">${formatearCOP(monto)} (${pctOfTotal}%)</span>
+              </div>
+              <div class="progress-bar-bg">
+                <div class="progress-bar-fill" style="width: ${pctOfTotal}%;"></div>
+              </div>
+            </div>
+          `;
+        });
       }
+
       document.getElementById('txtMayorGasto').innerText = mayorCat;
       document.getElementById('txtMontoMayorGasto').innerText = formatearCOP(maxMonto);
     }
