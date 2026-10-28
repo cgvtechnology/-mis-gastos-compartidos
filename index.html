@@ -355,6 +355,26 @@
       background: var(--border-color);
     }
 
+    .btn-print {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent-green);
+      border: 1px solid var(--accent-green);
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-print:hover {
+      background: var(--accent-green);
+      color: #fff;
+    }
+
     /* Widgets Superiores */
     .dashboard {
       display: grid;
@@ -752,6 +772,47 @@
       cursor: pointer;
       font-weight: bold;
     }
+
+    /* --- ESTILOS ESPECIALES PARA IMPRESIÓN / PDF --- */
+    @media print {
+      body {
+        background-color: #fff !important;
+        color: #000 !important;
+        padding: 0 !important;
+      }
+
+      header, .filter-bar, .advice-banner, #expenseFormPanel, .btn-edit-presupuesto, .action-buttons, th:last-child, td:last-child {
+        display: none !important;
+      }
+
+      .widget, .panel {
+        background: #fff !important;
+        border: 1px solid #ccc !important;
+        color: #000 !important;
+        box-shadow: none !important;
+        margin-bottom: 15px !important;
+      }
+
+      .widget h4, .panel-title, .category-name, td, th {
+        color: #000 !important;
+      }
+
+      .progress-bar-bg {
+        border: 1px solid #ccc;
+      }
+
+      .progress-bar-fill {
+        background: #333 !important;
+      }
+
+      table {
+        min-width: 100% !important;
+      }
+
+      th, td {
+        border-bottom: 1px solid #ddd !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -849,7 +910,7 @@
   <div id="appContainer" class="hidden">
     <div id="alertBanner" class="alert-banner"></div>
 
-    <!-- Barra de Filtros (Espacio + Rango de Fechas Personalizado) -->
+    <!-- Barra de Filtros (Espacio + Rango de Fechas + Botón Imprimir) -->
     <div class="filter-bar">
       <div class="filter-group-container">
         <!-- Selector de Espacio (Personal vs Familiar) -->
@@ -873,8 +934,11 @@
         <button class="btn-reset-dates" id="btnResetDates" title="Mostrar mes actual">Restablecer Mes</button>
       </div>
 
-      <div style="font-size: 0.8rem; color: var(--text-muted);" id="txtFilterRange">
-        Mostrando gastos del mes
+      <div style="display: flex; align-items: center; gap: 12px; width: 100%; justify-content: space-between; margin-top: 4px;">
+        <div style="font-size: 0.8rem; color: var(--text-muted);" id="txtFilterRange">
+          Mostrando gastos del mes
+        </div>
+        <button class="btn-print" id="btnPrintReport">🖨️ Imprimir / Guardar PDF</button>
       </div>
     </div>
 
@@ -1078,7 +1142,7 @@
     let unsubscribeBudget = null;
     let rawExpensesList = [];
     let currentExpensesList = [];
-    let selectedCategoryFilter = null; // Filtro de categoría activa
+    let selectedCategoryFilter = null;
 
     const subcategorias = {
       "Alimentación": [
@@ -1173,7 +1237,6 @@
       ]
     };
 
-    // Inicializar fechas predeterminadas (Primer día del mes actual a la fecha de hoy)
     function setInitialDates() {
       const now = new Date();
       const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -1193,7 +1256,7 @@
 
         if (data && data.length > 0) {
           const trmOficial = parseFloat(data[0].valor); 
-          const margenAmazon = 1.03; // ~3% margen de conversión Amazon
+          const margenAmazon = 1.03; 
           const tasaAmazonCOP = trmOficial * margenAmazon;
 
           const fechaVigencia = new Date(data[0].vigenciadesde).toLocaleDateString('es-CO', {
@@ -1695,7 +1758,18 @@
 
     document.getElementById('scopeFilter').addEventListener('change', () => {
       selectedCategoryFilter = null;
+      presupuestoInicial = 0;
+      
+      const banner = document.getElementById('alertBanner');
+      banner.className = "alert-banner";
+      banner.innerText = "";
+      
       escucharPresupuesto();
+    });
+
+    // Evento para imprimir reporte
+    document.getElementById('btnPrintReport').addEventListener('click', () => {
+      window.print();
     });
 
     // Manejo de clic para filtrar por categoría
@@ -1712,7 +1786,6 @@
       const tbody = document.getElementById('tablaGastos');
       tbody.innerHTML = '';
 
-      // Filtrado por categoría si hay una seleccionada
       let gastosTabla = gastos;
       if (selectedCategoryFilter) {
         gastosTabla = gastos.filter(g => g.category === selectedCategoryFilter);
@@ -1766,7 +1839,11 @@
           banner.innerText = `¡Advertencia! Has alcanzado el ${pct.toFixed(1)}% de tu presupuesto.`;
         } else {
           banner.className = "alert-banner";
+          banner.innerText = "";
         }
+      } else {
+        banner.className = "alert-banner";
+        banner.innerText = "";
       }
 
       let mayorCat = 'N/A';
