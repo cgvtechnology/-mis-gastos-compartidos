@@ -86,10 +86,14 @@
       }
     }
 
+    /* Estilo del Logo Circular */
     .brand-logo-img {
-      width: 36px;
-      height: 36px;
-      object-fit: contain;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;          /* Hace la imagen completamente redonda */
+      object-fit: cover;           /* Rena y recorta el logo dentro del círculo */
+      background-color: #ffffff;   /* Fondo blanco para contrastar el logo */
+      border: 2px solid var(--border-color); /* Borde suave opcional */
       flex-shrink: 0;
     }
 
@@ -825,9 +829,10 @@
 <body>
 
   <!-- Header / Navbar -->
+<!-- Header / Navbar -->
   <header>
     <div class="brand">
-      <img src="logo-familia.png" alt="Logotipo Finanzas" class="brand-logo-img">
+      <img src="Logo.jpg" alt="Logotipo CGV Technology" class="brand-logo-img">
       <span>Finanzas Familiares</span>
     </div>
     <div id="userHeader" class="user-info hidden">
