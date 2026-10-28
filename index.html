@@ -924,16 +924,6 @@
         <button type="submit" class="btn-submit" style="background: var(--accent-blue);">Cambiar Correo</button>
       </form>
     </div>
-
-    <!-- 4. Contraseña -->
-    <div class="profile-section">
-      <form id="formUpdatePassword" class="form-group">
-        <label>Cambiar Contraseña</label>
-        <input type="password" id="profileCurrentPassword" placeholder="Contraseña actual" required style="margin-bottom: 8px;" />
-        <input type="password" id="profileNewPassword" placeholder="Nueva contraseña (mín. 6 carac.)" required style="margin-bottom: 8px;" />
-        <button type="submit" class="btn-submit" style="background: var(--warning); color: #000;">Actualizar Contraseña</button>
-      </form>
-    </div>
   </div>
 
   <!-- CONTENIDO DEL DASHBOARD -->
@@ -1145,7 +1135,6 @@
       signOut,
       updateProfile,
       updateEmail,
-      updatePassword,
       sendPasswordResetEmail,
       EmailAuthProvider,
       reauthenticateWithCredential
@@ -1522,24 +1511,6 @@
         document.getElementById('profileEmailCurrentPass').value = '';
       } catch (err) {
         alert("Error al actualizar correo: " + err.message);
-      }
-    });
-
-    document.getElementById('formUpdatePassword').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const currentPass = document.getElementById('profileCurrentPassword').value;
-      const newPass = document.getElementById('profileNewPassword').value;
-      if (!currentUser || !currentUser.email) return;
-
-      try {
-        const credential = EmailAuthProvider.credential(currentUser.email, currentPass);
-        await reauthenticateWithCredential(currentUser, credential);
-        await updatePassword(currentUser, newPass);
-        alert("¡Contraseña actualizada con éxito!");
-        document.getElementById('profileCurrentPassword').value = '';
-        document.getElementById('profileNewPassword').value = '';
-      } catch (err) {
-        alert("Error al actualizar contraseña: " + err.message);
       }
     });
 
