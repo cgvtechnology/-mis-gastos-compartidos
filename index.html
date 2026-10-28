@@ -4,12 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Finanzas Familiares y Personales</title>
-  <!-- 🌐 Favicon para la pestaña del navegador -->
-    <link rel="icon" type="image/jpeg" href="Logo.jpg">
-
-    <!-- 📱 Enlace al Manifiesto de la PWA -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0f172a">
+  <!-- Favicon Circular de CGV Technology -->
+  <link rel="icon" type="image/jpeg" href="Logo.jpg">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f172a">
   <style>
     :root {
       --bg-color: #0f172a;
@@ -85,14 +83,13 @@
       }
     }
 
-    /* Estilo del Logo Circular */
     .brand-logo-img {
       width: 42px;
       height: 42px;
-      border-radius: 50%;          /* Hace la imagen completamente redonda */
-      object-fit: cover;           /* Rena y recorta el logo dentro del círculo */
-      background-color: #ffffff;   /* Fondo blanco para contrastar el logo */
-      border: 2px solid var(--border-color); /* Borde suave opcional */
+      border-radius: 50%;
+      object-fit: cover;
+      background-color: #ffffff;
+      border: 2px solid var(--border-color);
       flex-shrink: 0;
     }
 
@@ -240,6 +237,23 @@
       text-decoration: none;
       font-weight: 600;
       cursor: pointer;
+    }
+
+    .forgot-password {
+      text-align: right;
+      margin-top: 6px;
+      margin-bottom: 12px;
+      font-size: 0.8rem;
+    }
+
+    .forgot-password a {
+      color: var(--accent-blue);
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .forgot-password a:hover {
+      text-decoration: underline;
     }
 
     /* Banner de Alerta */
@@ -826,7 +840,8 @@
   </style>
 </head>
 <body>
- <!-- Header / Navbar -->
+
+  <!-- Header / Navbar -->
   <header>
     <div class="brand">
       <img src="Logo.jpg" alt="Logotipo CGV Technology" class="brand-logo-img">
@@ -853,6 +868,12 @@
         <label>Contraseña</label>
         <input type="password" id="authPassword" placeholder="••••••••" required />
       </div>
+
+      <!-- Enlace para recuperar contraseña -->
+      <div class="forgot-password">
+        <a id="btnForgotPassword">¿Olvidaste tu contraseña?</a>
+      </div>
+
       <button type="submit" class="btn-submit" id="btnAuthSubmit">Iniciar Sesión</button>
     </form>
 
@@ -1125,6 +1146,7 @@
       updateProfile,
       updateEmail,
       updatePassword,
+      sendPasswordResetEmail,
       EmailAuthProvider,
       reauthenticateWithCredential
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -1542,6 +1564,24 @@
         }
       } catch (err) {
         alert("Error de autenticación: " + err.message);
+      }
+    });
+
+    // --- RECUPERACIÓN DE CONTRASEÑA DESDE EL LOGIN ---
+    document.getElementById('btnForgotPassword').addEventListener('click', async () => {
+      const emailInput = document.getElementById('authEmail').value.trim();
+      
+      if (!emailInput) {
+        alert("Por favor, ingresa tu correo electrónico en el campo superior antes de hacer clic en '¿Olvidaste tu contraseña?'.");
+        document.getElementById('authEmail').focus();
+        return;
+      }
+
+      try {
+        await sendPasswordResetEmail(auth, emailInput);
+        alert(`¡Correo enviado! Hemos enviado un enlace de recuperación a ${emailInput}. Revisa tu bandeja de entrada o spam.`);
+      } catch (err) {
+        alert("Error al enviar el correo de recuperación: " + err.message);
       }
     });
 
