@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
   <title>Finanzas Familiares y Personales</title>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <!-- Favicon Circular de CGV Technology -->
   <link rel="icon" type="image/jpeg" href="Logo.jpg">
   <link rel="manifest" href="manifest.json">
@@ -991,7 +992,9 @@
         <div style="font-size: 0.8rem; color: var(--text-muted);" id="txtFilterRange">
           Mostrando gastos del mes
         </div>
-        <button class="btn-print" id="btnPrintReport">🖨️ Imprimir / Guardar PDF</button>
+       <button class="btn-print" id="btnExportExcel" style="background: rgba(16, 185, 129, 0.2); color: var(--accent-green); border-color: var(--accent-green);">
+  📊 Exportar a Excel
+</button>
       </div>
     </div>
 
@@ -1821,9 +1824,49 @@
     });
 
     // Evento para imprimir reporte
-    document.getElementById('btnPrintReport').addEventListener('click', () => {
-      window.print();
-    });
+   document.getElementById('btnExportExcel').addEventListener('click', () => {
+  if (!currentExpensesList || currentExpensesList.length === 0) {
+    alert("No hay gastos registrados en el rango de fechas o filtro seleccionado para exportar.");
+    return;
+  }
+
+  // 1. Dar formato a las filas para la hoja de cálculo
+  const datosExcel = currentExpensesList.map(g => ({
+    "Fecha": g.date || '',
+    "Espacio": g.scope === 'personal' ? 'Personal' : 'Familiar',
+    "Categoría": g.category || '',
+    "Subcategoría": g.subcategory || 'Sin subcategoría',
+    "Descripción / Detalle": g.description || '',
+    "Pagado Por": g.payer || '',
+    "Método de Pago": g.method || '',
+    "Monto ($ COP)": parseFloat(g.amount) || 0
+  }));
+
+  // 2. Crear el libro de trabajo (Workbook) y la hoja (Worksheet)
+  const worksheet = XLSX.utils.json_to_sheet(datosExcel);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Reporte de Gastos");
+
+  // 3. Auto-ajustar ancho de columnas para mejor visualización
+  const max_widths = [
+    { wch: 12 }, // Fecha
+    { wch: 12 }, // Espacio
+    { wch: 25 }, // Categoría
+    { wch: 28 }, // Subcategoría
+    { wch: 35 }, // Descripción
+    { wch: 18 }, // Pagado Por
+    { wch: 16 }, // Método
+    { wch: 16 }  // Monto
+  ];
+  worksheet['!cols'] = max_widths;
+
+  // 4. Generar el nombre del archivo con la fecha actual
+  const fechaHoy = new Date().toISOString().split('T')[0];
+  const nombreArchivo = `Reporte_Gastos_${fechaHoy}.xlsx`;
+
+  // 5. Descargar el archivo Excel automáticamente
+  XLSX.writeFile(workbook, nombreArchivo);
+}););
 
     // Manejo de clic para filtrar por categoría
     window.toggleCategoryFilter = (catName) => {
