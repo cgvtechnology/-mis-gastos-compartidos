@@ -180,22 +180,27 @@
     }
 
     /* Modales */
-    .auth-container, .modal-container {
-      width: 100%;
-      max-width: 420px;
-      margin: 0 auto;
+    .auth-container, .auth-container {
+      width: 92% !important;          /* Ocupa casi todo el ancho de la pantalla del celular con márgenes seguros */
+      max-width: 420px;               /* En computadores o tablets no crecerá más de esto */
+      margin: 20px auto;              /* Centrado automático */
       background: var(--card-bg);
       border: 1px solid var(--border-color);
       border-radius: 16px;
-      padding: 24px;
+      padding: 24px 20px;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
     }
 
     @media (min-width: 640px) {
       .auth-container, .modal-container {
-        margin: 20px auto;
-        padding: 28px;
-      }
+      width: 92% !important;
+      max-width: 480px;
+      margin: 20px auto;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 24px 20px;
+    }
     }
 
     .auth-title {
