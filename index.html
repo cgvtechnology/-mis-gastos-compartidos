@@ -60,7 +60,7 @@
       max-width: 480px;
     }
 
-    /* Logo circular por defecto para el encabezado de la app */
+    /* Logo circular por defecto para el encabezado dentro de la app */
     .brand-logo-img {
       width: 75px;
       height: 75px;
@@ -70,10 +70,10 @@
       border: 2px solid var(--border-color);
     }
 
-    /* Estilo alargado (tipo billete/tarjeta) exclusivo para el inicio de sesión */
-    .auth-card .brand-logo-img {
-      width: 180px;
-      height: 75px;
+    /* Estilo alargado (tipo billete) para el logo superior en la pantalla de login */
+    #authHeaderLogo {
+      width: 200px;
+      height: 80px;
       border-radius: 0.5rem;
       object-fit: cover;
     }
@@ -160,13 +160,14 @@
 <body class="p-3 p-md-4">
 
   <!-- Header / Navbar Superior -->
-  <header class="d-flex flex-column flex-sm-row justify-content-between align-items-center pb-3 mb-4 border-bottom border-secondary">
-    <div class="brand d-flex align-items-center gap-3 mb-3 mb-sm-0">
-      <img src="Logo.jpg" alt="Logotipo CGV Technology" class="brand-logo-img shadow-sm">
-      <span class="fs-4 fw-bold" id="appMainTitle">Finanzas Familiares</span>
+  <header id="mainHeader" class="d-flex flex-column flex-sm-row justify-content-center align-items-center pb-3 mb-4 border-bottom border-secondary text-center">
+    <div class="brand d-flex flex-column flex-sm-row align-items-center gap-3">
+      <img src="Logo.jpg" alt="Logotipo CGV Technology" id="authHeaderLogo" class="shadow-sm">
+      <span class="fs-3 fw-bold" id="appMainTitle">Finanzas</span>
     </div>
 
-    <div class="d-flex align-items-center gap-2">
+    <!-- Controles derechos (Tema y Usuario) que se ocultan en login -->
+    <div id="headerControls" class="d-none align-items-center gap-2 ms-auto">
       <!-- Botón Selector de Tema (Oscuro / Claro) -->
       <button class="btn btn-outline-secondary btn-sm px-3 d-flex align-items-center gap-2" id="btnToggleTheme" title="Cambiar Tema">
         <i class="bi bi-moon-stars-fill" id="themeIcon"></i>
@@ -183,15 +184,12 @@
   </header>
 
   <!-- CONTENEDOR DE AUTENTICACIÓN -->
-  <div id="authWrapper" class="container d-flex justify-content-center align-items-center my-auto" style="min-height: 60vh;">
-    <div id="authContainer" class="auth-card text-center">
-      <div class="mb-3">
-        <img src="Logo.jpg" alt="Logotipo CGV Technology" class="brand-logo-img shadow-sm mx-auto">
-      </div>
+  <div id="authWrapper" class="container d-flex justify-content-center align-items-center my-auto" style="min-height: 50vh;">
+    <div id="authContainer" class="auth-card">
       <h2 class="text-center fs-4 fw-bold mb-1" id="authTitle">Finanzas</h2>
       <p class="text-center text-muted small mb-4">Sincroniza y controla tus gastos individuales o del hogar en tiempo real</p>
 
-      <form id="authForm" class="text-start">
+      <form id="authForm">
         <div class="mb-3">
           <label class="form-label small fw-bold text-muted">Correo Electrónico</label>
           <input type="email" class="form-control" id="authEmail" placeholder="tu@email.com" required />
@@ -636,6 +634,10 @@
     }
 
     onAuthStateChanged(auth, async (user) => {
+      const mainHeader = document.getElementById('mainHeader');
+      const headerControls = document.getElementById('headerControls');
+      const authHeaderLogo = document.getElementById('authHeaderLogo');
+
       if (user) {
         currentUser = user;
         const nombreMostrar = user.displayName || (user.email ? user.email.split('@')[0] : 'Invitado');
@@ -643,6 +645,12 @@
         document.getElementById('payer').value = nombreMostrar;
         document.getElementById('profileDisplayName').value = user.displayName || '';
         document.getElementById('profileEmail').value = user.email || '';
+
+        // Cambiar el header a diseño normal (alineado a la izquierda con logo circular) al iniciar sesión
+        mainHeader.className = "d-flex flex-column flex-sm-row justify-content-between align-items-center pb-3 mb-4 border-bottom border-secondary";
+        headerControls.classList.remove('d-none');
+        headerControls.classList.add('d-flex');
+        authHeaderLogo.className = "brand-logo-img shadow-sm"; // Vuelve a ser circular y tamaño normal adentro
 
         document.getElementById('authWrapper').classList.add('d-none');
         document.getElementById('appContainer').classList.remove('d-none');
@@ -657,6 +665,13 @@
         if (unsubscribeExpenses) unsubscribeExpenses();
         if (unsubscribeBudget) unsubscribeBudget();
         if (dolarIntervalId) clearInterval(dolarIntervalId);
+
+        // Header centrado con logo alargado para la pantalla de login
+        mainHeader.className = "d-flex flex-column flex-sm-row justify-content-center align-items-center pb-3 mb-4 border-bottom border-secondary text-center";
+        headerControls.classList.add('d-none');
+        headerControls.classList.remove('d-flex');
+        authHeaderLogo.id = "authHeaderLogo"; // Aplica estilo billete
+
         document.getElementById('authWrapper').classList.remove('d-none');
         document.getElementById('appContainer').classList.add('d-none');
         document.getElementById('userHeader').classList.add('d-none');
