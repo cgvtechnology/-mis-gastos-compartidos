@@ -571,7 +571,7 @@
       3: { titulo: "Abril: Obligaciones fiscales", texto: "Mes clave para impuestos. Guarda un fondo de reserva." },
       4: { titulo: "Mayo: Presupuestos familiares", texto: "Establece un tope máximo para reuniones familiares." },
       5: { titulo: "Junio: Prima de mitad de año", texto: "Destina un 30% de ingresos extras al ahorro o deudas." },
-      6: { titulo: "Julio: Vacaciones", texto: "Ajustate strictly al presupuesto de ocio." },
+      6: { titulo: "Julio: Vacaciones", texto: "Ajustate estrictamente al presupuesto de ocio." },
       7: { titulo: "Agosto: Imprevistos", texto: "Mantén al día tu fondo de emergencias." },
       8: { titulo: "Septiembre: Control de deudas", texto: "Aprovecha para acelerar abonos a capital." },
       9: { titulo: "Octubre: Planificación fin de año", texto: "Empieza a cotizar compras navideñas." },
@@ -603,20 +603,23 @@
       }
     }
 
-    // --- FUNCIÓN DE SINCRONIZACIÓN DE MODO EN FORMULARIO Y TÍTULO PRINCIPAL ---
+    // --- FUNCIÓN DE SINCRONIZACIÓN EXCLUSIVA PARA CADA VISTA ---
     function sincronizarOpcionesFormulario(modo) {
       const optFamily = document.getElementById('optScopeFamily');
+      const optPersonal = document.getElementById('optScopePersonal');
       const expenseScope = document.getElementById('expenseScope');
       const appMainTitle = document.getElementById('appMainTitle');
 
       if (modo === 'personal') {
-        optFamily.classList.add('d-none'); // Oculta la opción familiar en el formulario
-        expenseScope.value = 'personal';    // Fija la opción en personal
-        appMainTitle.textContent = 'Finanzas Personales'; // Cambia el título principal
+        optFamily.classList.add('d-none');       // Oculta la opción familiar
+        optPersonal.classList.remove('d-none'); // Muestra solo personal
+        expenseScope.value = 'personal';          // Selecciona personal
+        appMainTitle.textContent = 'Finanzas Personales';
       } else {
-        optFamily.classList.remove('d-none'); // Muestra ambas opciones
-        expenseScope.value = 'family';
-        appMainTitle.textContent = 'Finanzas Familiares'; // Cambia el título principal
+        optFamily.classList.remove('d-none');   // Muestra solo familiar
+        optPersonal.classList.add('d-none');     // Oculta la opción personal
+        expenseScope.value = 'family';            // Selecciona familiar
+        appMainTitle.textContent = 'Finanzas Familiares';
       }
     }
 
@@ -869,7 +872,12 @@
       const gasto = rawExpensesList.find(g => g.id === id);
       if (!gasto) return;
       document.getElementById('editingExpenseId').value = gasto.id;
+      
+      // Permitir ver la opción guardada al editar
+      document.getElementById('optScopeFamily').classList.remove('d-none');
+      document.getElementById('optScopePersonal').classList.remove('d-none');
       document.getElementById('expenseScope').value = gasto.scope || 'family';
+
       document.getElementById('amount').value = gasto.amount;
       document.getElementById('category').value = gasto.category;
       actualizarSubcategorias();
@@ -897,7 +905,7 @@
       document.getElementById('expenseFormPanel').classList.remove('border', 'border-primary');
       actualizarSubcategorias();
       
-      // Mantener sincronizado el selector según la vista actual
+      // Re-sincronizar y ocultar la opción que no corresponde a la vista activa
       const activeScope = document.getElementById('scopeFilter').value;
       sincronizarOpcionesFormulario(activeScope);
 
@@ -1173,7 +1181,7 @@
     setInitialDates();
     actualizarSubcategorias();
     document.getElementById('date').valueAsDate = new Date();
-    // Inicializar la sincronización según la vista inicial
+    // Inicializar la sincronización según la vista activa
     sincronizarOpcionesFormulario(document.getElementById('scopeFilter').value);
   </script>
 </body>
