@@ -109,6 +109,28 @@
       background: rgba(16, 185, 129, 0.1);
     }
 
+    /* Efecto hover elegante para las filas de la tabla */
+    .table-hover tbody tr:hover {
+      background-color: rgba(59, 130, 246, 0.1) !important;
+      cursor: pointer;
+    }
+
+    /* Estilo transparente y limpio para la subcategoría */
+    .badge-subcat {
+      background-color: transparent !important;
+      border: 1px solid var(--border-color);
+      color: var(--text-muted) !important;
+      font-size: 0.68rem !important;
+      font-weight: normal;
+      transition: all 0.2s ease;
+    }
+
+    /* Al pasar el mouse por la fila, la subcategoría resalta */
+    tr:hover .badge-subcat {
+      border-color: #3b82f6;
+      color: var(--text-main) !important;
+    }
+
     /* Indicador parpadeante para la actualización cada 5s */
     .live-dot {
       display: inline-block;
@@ -299,7 +321,7 @@
         </div>
       </div>
 
-      <!-- WIDGET DEL DÓLAR DE GOOGLE (ACTUALIZADO EN VIVO CADA 5 SEGUNDOS) -->
+      <!-- WIDGET DEL DÓLAR EN VIVO (ACTUALIZADO CADA 5 SEGUNDOS) -->
       <div class="col-12 col-sm-6 col-xl-3">
         <div class="card-custom p-3 h-100 border-success border-opacity-50">
           <div class="d-flex justify-content-between align-items-center mb-1">
@@ -514,13 +536,12 @@
       document.getElementById('endDate').value = now.toISOString().split('T')[0];
     }
 
-    // --- OBTENCIÓN Y REFRESH AUTOMÁTICO CADA 5 SEGUNDOS DEL DÓLAR HOY ---
+    // --- OBTENCIÓN Y REFRESH AUTOMÁTICO CADA 5 SEGUNDOS DEL DÓLAR ---
     async function consultarDolarEnVivo() {
       const txtValue = document.getElementById('txtDolarTRMValue');
       const txtDate = document.getElementById('txtDolarTRMDate');
 
       try {
-        // API en tiempo real de la cotización interbancaria del dólar (USD/COP)
         const res = await fetch('https://open.er-api.com/v6/latest/USD');
         const data = await res.json();
 
@@ -537,9 +558,8 @@
     }
 
     function iniciarCicloDolar5s() {
-      consultarDolarEnVivo(); // Consulta inmediata
+      consultarDolarEnVivo();
       if (dolarIntervalId) clearInterval(dolarIntervalId);
-      // Se ejecuta automáticamente cada 5000 ms (5 segundos) de forma interna
       dolarIntervalId = setInterval(consultarDolarEnVivo, 5000);
     }
 
@@ -1000,7 +1020,7 @@
             <tr>
               <td>${g.date || ''}</td>
               <td><span class="badge ${badgeScopeClass}">${badgeScopeText}</span></td>
-             <td><strong>${g.category}</strong><br><span class="badge bg-secondary bg-opacity-50 text-light border border-secondary" style="font-size: 0.7rem;">${g.subcategory || 'Sin subcat.'}</span></td>
+              <td><strong>${g.category}</strong><br><span class="badge badge-subcat mt-1">${g.subcategory || 'Sin subcat.'}</span></td>
               <td>${g.description}</td>
               <td>${g.payer}</td>
               <td>${g.method}</td>
