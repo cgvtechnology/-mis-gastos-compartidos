@@ -26,9 +26,6 @@
       --text-muted: #94a3b8;
       --accent-green: #10b981;
       --accent-blue: #3b82f6;
-      --danger: #ef4444;
-      --warning: #f59e0b;
-      --amazon-orange: #ff9900;
     }
 
     body {
@@ -36,12 +33,9 @@
       color: var(--text-main);
       min-height: 100vh;
       min-height: 100dvh;
-      display: flex;
-      flex-direction: column;
     }
 
-    /* Contenedores principales adaptables */
-    .auth-container, .modal-container {
+    .auth-card, .modal-card {
       background: var(--card-bg);
       border: 1px solid #334155;
       border-radius: 1rem;
@@ -49,25 +43,21 @@
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
       width: 100%;
       max-width: 420px;
-      margin: auto;
     }
 
-    .modal-container {
+    .modal-card {
       max-width: 480px;
-      margin: 20px auto;
     }
 
-    /* Imagen de logotipo redonda */
     .brand-logo-img {
-      width: 90px;
-      height: 90px;
+      width: 75px;
+      height: 75px;
       border-radius: 50%;
       object-fit: cover;
       background-color: #ffffff;
       border: 2px solid #334155;
     }
 
-    /* Estilos personalizados para tarjetas y paneles Bootstrap */
     .card-custom {
       background-color: var(--card-bg);
       border: 1px solid #334155;
@@ -79,7 +69,7 @@
       background-color: var(--card-inner) !important;
       border-color: #334155 !important;
       color: var(--text-main) !important;
-      font-size: 16px !important; /* Previene zoom automático en móviles */
+      font-size: 16px !important;
     }
 
     .form-control:focus, .form-select:focus {
@@ -87,7 +77,6 @@
       box-shadow: 0 0 0 0.25rem rgba(16, 185, 129, 0.25) !important;
     }
 
-    /* Categorías clicables con efecto hover */
     .category-item {
       background: var(--card-inner);
       border: 1px solid #334155;
@@ -106,7 +95,6 @@
     .category-item.active-filter {
       border-color: var(--accent-green);
       background: rgba(16, 185, 129, 0.1);
-      box-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
     }
   </style>
 </head>
@@ -118,84 +106,85 @@
       <img src="Logo.jpg" alt="Logotipo CGV Technology" class="brand-logo-img shadow-sm">
       <span class="fs-4 fw-bold">Finanzas Familiares</span>
     </div>
-    <div id="userHeader" class="user-info d-flex align-items-center gap-2 hidden">
+    <div id="userHeader" class="user-info d-flex align-items-center gap-2 d-none">
       <span class="user-name text-muted small fw-medium text-truncate" id="userDisplayName" style="max-width: 140px;">Cargando...</span>
       <button class="btn btn-outline-primary btn-sm px-3" id="btnOpenProfile">⚙️ Perfil</button>
       <button class="btn btn-outline-danger btn-sm px-3" id="btnLogout">Cerrar Sesión</button>
     </div>
   </header>
 
-  <!-- PANTALLA DE INICIO DE SESIÓN -->
-  <div id="authContainer" class="auth-container">
-    <h2 class="text-center fs-4 fw-bold mb-1" id="authTitle">Finanzas Familiares y Personales</h2>
-    <p class="text-center text-muted small mb-4">Sincroniza y controla tus gastos individuales o del hogar en tiempo real</p>
+  <!-- CONTENEDOR DE AUTENTICACIÓN (CENTRADO) -->
+  <div id="authWrapper" class="container d-flex justify-content-center align-items: center my-auto" style="min-height: 60vh;">
+    <div id="authContainer" class="auth-card">
+      <h2 class="text-center fs-4 fw-bold mb-1" id="authTitle">Finanzas Familiares</h2>
+      <p class="text-center text-muted small mb-4">Sincroniza y controla tus gastos individuales o del hogar en tiempo real</p>
 
-    <form id="authForm">
-      <div class="mb-3">
-        <label class="form-label small fw-bold text-muted">Correo Electrónico</label>
-        <input type="email" class="form-control" id="authEmail" placeholder="tu@email.com" required />
+      <form id="authForm">
+        <div class="mb-3">
+          <label class="form-label small fw-bold text-muted">Correo Electrónico</label>
+          <input type="email" class="form-control" id="authEmail" placeholder="tu@email.com" required />
+        </div>
+        <div class="mb-2">
+          <label class="form-label small fw-bold text-muted">Contraseña</label>
+          <input type="password" class="form-control" id="authPassword" placeholder="••••••••" required />
+        </div>
+
+        <div class="text-end mb-3">
+          <a id="btnForgotPassword" class="small text-decoration-none text-primary" style="cursor: pointer;">¿Olvidaste tu contraseña?</a>
+        </div>
+
+        <button type="submit" class="btn btn-success w-100 fw-bold py-2 mb-2" id="btnAuthSubmit">Iniciar Sesión</button>
+      </form>
+
+      <button type="button" class="btn btn-outline-secondary w-100 fw-semibold py-2" id="btnDemo">Entrar Modo Invitado / Demo</button>
+
+      <div class="text-center mt-3 small text-muted">
+        <span id="toggleText">¿No tienes cuenta?</span>
+        <a id="btnToggleAuth" class="text-success text-decoration-none fw-bold ms-1" style="cursor: pointer;">Regístrate aquí</a>
       </div>
-      <div class="mb-2">
-        <label class="form-label small fw-bold text-muted">Contraseña</label>
-        <input type="password" class="form-control" id="authPassword" placeholder="••••••••" required />
-      </div>
-
-      <div class="text-end mb-3">
-        <a id="btnForgotPassword" class="small text-decoration-none text-primary" style="cursor: pointer;">¿Olvidaste tu contraseña?</a>
-      </div>
-
-      <button type="submit" class="btn btn-success w-100 fw-bold py-2 mb-2" id="btnAuthSubmit">Iniciar Sesión</button>
-    </form>
-
-    <button type="button" class="btn btn-outline-secondary w-100 fw-semibold py-2" id="btnDemo">Entrar Modo Invitado / Demo</button>
-
-    <div class="text-center mt-3 small text-muted">
-      <span id="toggleText">¿No tienes cuenta?</span>
-      <a id="btnToggleAuth" class="text-success text-decoration-none fw-bold ms-1" style="cursor: pointer;">Regístrate aquí</a>
     </div>
   </div>
 
-  <!-- MODAL / PANEL DE CONFIGURACIÓN DE PERFIL -->
-  <div id="profileContainer" class="modal-container hidden">
-    <div class="d-flex justify-content-between align-items: center mb-3">
-      <h3 class="fs-5 fw-bold m-0">⚙️ Configuración del Perfil</h3>
-      <button id="btnCloseProfile" class="btn-close btn-close-white" aria-label="Cerrar"></button>
-    </div>
-
-    <!-- 1. Nombre de Usuario -->
-    <form id="formUpdateProfile" class="mb-3">
-      <label class="form-label small fw-bold text-muted">Nombre de Usuario / Apodo</label>
-      <div class="input-group">
-        <input type="text" class="form-control" id="profileDisplayName" placeholder="Tu nombre" required />
-        <button type="submit" class="btn btn-outline-primary">Actualizar</button>
+  <!-- PANEL / MODAL DE CONFIGURACIÓN DE PERFIL (FLOTANTE CENTRADO) -->
+  <div id="profileContainer" class="container position-fixed top-50 start-50 translate-middle d-none" style="z-index: 1050; max-width: 485px;">
+    <div class="modal-card shadow-lg w-100">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="fs-5 fw-bold m-0">⚙️ Configuración del Perfil</h3>
+        <button id="btnCloseProfile" class="btn-close btn-close-white" aria-label="Cerrar"></button>
       </div>
-    </form>
 
-    <!-- 2. Permisos y Compartir Finanzas -->
-    <div class="border-top border-secondary pt-3 mb-3">
-      <label class="form-label small fw-bold text-muted">👥 Compartir Finanzas Familiares Con</label>
-      <p class="text-muted" style="font-size: 0.75rem;">Ingresa los correos de tu familia para autorizarles ver y registrar gastos.</p>
-      
-      <form id="formAddSharedUser" class="input-group mb-2">
-        <input type="email" class="form-control" id="inputSharedEmail" placeholder="familiar@ejemplo.com" required />
-        <button type="submit" class="btn btn-primary">Agregar</button>
+      <form id="formUpdateProfile" class="mb-3">
+        <label class="form-label small fw-bold text-muted">Nombre de Usuario / Apodo</label>
+        <div class="input-group">
+          <input type="text" class="form-control" id="profileDisplayName" placeholder="Tu nombre" required />
+          <button type="submit" class="btn btn-outline-primary">Actualizar</button>
+        </div>
       </form>
-      <div id="sharedUsersList" class="d-flex flex-wrap gap-1"></div>
-    </div>
 
-    <!-- 3. Correo Electrónico -->
-    <div class="border-top border-secondary pt-3">
-      <form id="formUpdateEmail">
-        <label class="form-label small fw-bold text-muted">Nuevo Correo Electrónico</label>
-        <input type="email" class="form-control mb-2" id="profileEmail" placeholder="nuevo@correo.com" required />
-        <input type="password" class="form-control mb-2" id="profileEmailCurrentPass" placeholder="Contraseña actual para confirmar" required />
-        <button type="submit" class="btn btn-primary w-100">Cambiar Correo</button>
-      </form>
+      <div class="border-top border-secondary pt-3 mb-3">
+        <label class="form-label small fw-bold text-muted">👥 Compartir Finanzas Familiares Con</label>
+        <p class="text-muted mb-2" style="font-size: 0.75rem;">Ingresa los correos de tu familia para autorizarles ver y registrar gastos.</p>
+        
+        <form id="formAddSharedUser" class="input-group mb-2">
+          <input type="email" class="form-control" id="inputSharedEmail" placeholder="familiar@ejemplo.com" required />
+          <button type="submit" class="btn btn-primary">Agregar</button>
+        </form>
+        <div id="sharedUsersList" class="d-flex flex-wrap gap-1"></div>
+      </div>
+
+      <div class="border-top border-secondary pt-3">
+        <form id="formUpdateEmail">
+          <label class="form-label small fw-bold text-muted">Nuevo Correo Electrónico</label>
+          <input type="email" class="form-control mb-2" id="profileEmail" placeholder="nuevo@correo.com" required />
+          <input type="password" class="form-control mb-2" id="profileEmailCurrentPass" placeholder="Contraseña actual" required />
+          <button type="submit" class="btn btn-primary w-100">Cambiar Correo</button>
+        </form>
+      </div>
     </div>
   </div>
 
   <!-- CONTENIDO PRINCIPAL DEL DASHBOARD -->
-  <div id="appContainer" class="hidden w-100">
+  <div id="appContainer" class="d-none w-100">
     <div id="alertBanner" class="alert d-none mb-3" role="alert"></div>
 
     <!-- Barra de Filtros Bootstrap -->
@@ -240,7 +229,7 @@
       </div>
     </div>
 
-    <!-- Dashboard Widgets (Tarjetas Superiores) -->
+    <!-- Dashboard Widgets -->
     <div class="row g-3 mb-3">
       <div class="col-12 col-sm-6 col-xl-3">
         <div class="card-custom p-3 h-100">
@@ -249,7 +238,7 @@
             <span class="fs-4 fw-bold" id="txtPresupuesto">$ 0,00</span>
             <button id="btnEditarPresupuesto" class="btn btn-outline-primary btn-sm">✏️ Editar</button>
           </div>
-          <div id="editPresupuestoContainer" class="input-group input-group-sm mt-2 hidden">
+          <div id="editPresupuestoContainer" class="input-group input-group-sm mt-2 d-none">
             <input type="number" id="inputPresupuesto" class="form-control" step="0.01" placeholder="Nuevo monto..." />
             <button class="btn btn-primary" id="btnFijarPresupuesto">Guardar</button>
             <button class="btn btn-outline-secondary" id="btnCancelarPresupuesto">✕</button>
@@ -285,7 +274,6 @@
     <div class="row g-3">
       <!-- Columna Izquierda: Formulario y Desglose -->
       <div class="col-12 col-lg-4 d-flex flex-column gap-3">
-        <!-- Formulario de Registro -->
         <div class="card-custom p-3" id="expenseFormPanel">
           <h5 class="fs-6 fw-bold mb-3" id="formTitle">➕ Registrar Nuevo Gasto</h5>
           <form id="expenseForm">
@@ -354,7 +342,7 @@
             </div>
 
             <button type="submit" class="btn btn-success w-100 fw-bold" id="btnSubmitExpense">Guardar Gasto</button>
-            <button type="button" class="btn btn-outline-secondary w-100 mt-2 hidden" id="btnCancelEditExpense">Cancelar Edición</button>
+            <button type="button" class="btn btn-outline-secondary w-100 mt-2 d-none" id="btnCancelEditExpense">Cancelar Edición</button>
           </form>
         </div>
 
@@ -368,7 +356,7 @@
         </div>
       </div>
 
-      <!-- Columna Derecha: Historial de Gastos con Tabla Bootstrap -->
+      <!-- Columna Derecha: Historial de Gastos -->
       <div class="col-12 col-lg-8">
         <div class="card-custom p-3 h-100">
           <h5 class="fs-6 fw-bold mb-3">📋 Historial de Gastos</h5>
@@ -394,7 +382,7 @@
     </div>
   </div>
 
-  <!-- Firebase Módulos v10 y Lógica de la Aplicación -->
+  <!-- Firebase Módulos v10 y Lógica Adaptada a d-none -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { 
@@ -481,17 +469,17 @@
     }
 
     const consejosPorMes = {
-      0: { titulo: "Enero: La cuesta de enero y planificación inicial", texto: "Prioriza pagar deudas de fin de año y fija tu presupuesto anual." },
-      1: { titulo: "Febrero: Matrículas y temporada escolar", texto: "Monitorea gastos educativos y compara precios al por mayor." },
-      2: { titulo: "Marzo: Revisión del primer trimestre", texto: "Revisa metas de ahorro y ajusta categorías no esenciales." },
-      3: { titulo: "Abril: Preparación para pagos de impuestos", texto: "Mes clave para obligaciones fiscales. Guarda un fondo de reserva." },
-      4: { titulo: "Mayo: Gastos festivos y presupuestos familiares", texto: "Establece un tope máximo para reuniones familiares." },
-      5: { titulo: "Junio: Prima de mitad de año y ahorro", texto: "Destina un 30% de ingresos extras al ahorro o deudas." },
-      6: { titulo: "Julio: Temporada de receso y vacaciones", texto: "Ajustate estrictamente al presupuesto de ocio." },
-      7: { titulo: "Agosto: Declaración de renta e imprevistos", texto: "Mantén al día tu fondo de emergencias." },
-      8: { titulo: "Septiembre: Consolidación y control de deudas", texto: "Aprovecha para acelerar abonos a capital." },
-      9: { titulo: "Octubre: Planificación anticipada de fin de año", texto: "Empieza a cotizar compras navideñas para protegerte de alzas." },
-      10: { titulo: "Noviembre: Ofertas con responsabilidad", texto: "Compra solo lo presupuestado en fechas de descuentos." },
+      0: { titulo: "Enero: Planificación inicial", texto: "Prioriza pagar deudas de fin de año y fija tu presupuesto anual." },
+      1: { titulo: "Febrero: Temporada escolar", texto: "Monitorea gastos educativos y compara precios." },
+      2: { titulo: "Marzo: Revisión trimestral", texto: "Revisa metas de ahorro y ajusta categorías no esenciales." },
+      3: { titulo: "Abril: Obligaciones fiscales", texto: "Mes clave para impuestos. Guarda un fondo de reserva." },
+      4: { titulo: "Mayo: Presupuestos familiares", texto: "Establece un tope máximo para reuniones familiares." },
+      5: { titulo: "Junio: Prima de mitad de año", texto: "Destina un 30% de ingresos extras al ahorro o deudas." },
+      6: { titulo: "Julio: Vacaciones", texto: "Ajustate estrictamente al presupuesto de ocio." },
+      7: { titulo: "Agosto: Imprevistos", texto: "Mantén al día tu fondo de emergencias." },
+      8: { titulo: "Septiembre: Control de deudas", texto: "Aprovecha para acelerar abonos a capital." },
+      9: { titulo: "Octubre: Planificación fin de año", texto: "Empieza a cotizar compras navideñas." },
+      10: { titulo: "Noviembre: Ofertas con responsabilidad", texto: "Compra solo lo presupuestado." },
       11: { titulo: "Diciembre: Presupuesto navideño", texto: "Inicia enero con tranquilidad gestionando tu prima." }
     };
 
@@ -528,9 +516,9 @@
         document.getElementById('profileDisplayName').value = user.displayName || '';
         document.getElementById('profileEmail').value = user.email || '';
 
-        document.getElementById('authContainer').classList.add('hidden');
-        document.getElementById('appContainer').classList.remove('hidden');
-        document.getElementById('userHeader').classList.remove('hidden');
+        document.getElementById('authWrapper').classList.add('d-none');
+        document.getElementById('appContainer').classList.remove('d-none');
+        document.getElementById('userHeader').classList.remove('d-none');
 
         await resolverGrupoFamiliar();
         escucharPresupuesto();
@@ -540,10 +528,10 @@
         currentFamilyOwnerId = null;
         if (unsubscribeExpenses) unsubscribeExpenses();
         if (unsubscribeBudget) unsubscribeBudget();
-        document.getElementById('authContainer').classList.remove('hidden');
-        document.getElementById('appContainer').classList.add('hidden');
-        document.getElementById('userHeader').classList.add('hidden');
-        document.getElementById('profileContainer').classList.add('hidden');
+        document.getElementById('authWrapper').classList.remove('d-none');
+        document.getElementById('appContainer').classList.add('d-none');
+        document.getElementById('userHeader').classList.add('d-none');
+        document.getElementById('profileContainer').classList.add('d-none');
       }
     });
 
@@ -564,7 +552,7 @@
             currentFamilyOwnerId = querySnapshot.docs[0].id;
           }
         } catch (err) {
-          console.error("Error al resolver grupo compartido:", err);
+          console.error("Error al resolver grupo:", err);
         }
       }
       await cargarUsuariosCompartidos();
@@ -625,11 +613,11 @@
     };
 
     document.getElementById('btnOpenProfile').addEventListener('click', () => {
-      document.getElementById('profileContainer').classList.toggle('hidden');
+      document.getElementById('profileContainer').classList.toggle('d-none');
     });
 
     document.getElementById('btnCloseProfile').addEventListener('click', () => {
-      document.getElementById('profileContainer').classList.add('hidden');
+      document.getElementById('profileContainer').classList.add('d-none');
     });
 
     document.getElementById('formUpdateProfile').addEventListener('submit', async (e) => {
@@ -664,7 +652,7 @@
 
     document.getElementById('btnToggleAuth').addEventListener('click', () => {
       isSignUpMode = !isSignUpMode;
-      document.getElementById('authTitle').textContent = isSignUpMode ? 'Crear Cuenta' : 'Iniciar Sesión';
+      document.getElementById('authTitle').textContent = isSignUpMode ? 'Crear Cuenta' : 'Finanzas Familiares';
       document.getElementById('btnAuthSubmit').textContent = isSignUpMode ? 'Registrarse' : 'Iniciar Sesión';
       document.getElementById('toggleText').textContent = isSignUpMode ? '¿Ya tienes cuenta?' : '¿No tienes cuenta?';
       document.getElementById('btnToggleAuth').textContent = isSignUpMode ? 'Inicia sesión aquí' : 'Regístrate aquí';
@@ -726,14 +714,14 @@
 
     document.getElementById('btnEditarPresupuesto').addEventListener('click', () => {
       document.getElementById('inputPresupuesto').value = presupuestoInicial || '';
-      document.getElementById('viewPresupuestoContainer').classList.add('hidden');
-      document.getElementById('editPresupuestoContainer').classList.remove('hidden');
+      document.getElementById('viewPresupuestoContainer').classList.add('d-none');
+      document.getElementById('editPresupuestoContainer').classList.remove('d-none');
       document.getElementById('inputPresupuesto').focus();
     });
 
     document.getElementById('btnCancelarPresupuesto').addEventListener('click', () => {
-      document.getElementById('editPresupuestoContainer').classList.add('hidden');
-      document.getElementById('viewPresupuestoContainer').classList.remove('hidden');
+      document.getElementById('editPresupuestoContainer').classList.add('d-none');
+      document.getElementById('viewPresupuestoContainer').classList.remove('d-none');
     });
 
     document.getElementById('btnFijarPresupuesto').addEventListener('click', async () => {
@@ -744,8 +732,8 @@
       if (!isNaN(val) && val >= 0) {
         try {
           await setDoc(docRef, { monto: val, updatedAt: new Date() });
-          document.getElementById('editPresupuestoContainer').classList.add('hidden');
-          document.getElementById('viewPresupuestoContainer').classList.remove('hidden');
+          document.getElementById('editPresupuestoContainer').classList.add('d-none');
+          document.getElementById('viewPresupuestoContainer').classList.remove('d-none');
         } catch (err) {
           alert("Error al guardar presupuesto.");
         }
@@ -780,7 +768,7 @@
       document.getElementById('formTitle').textContent = '✏️ Editar Gasto';
       document.getElementById('btnSubmitExpense').textContent = 'Actualizar Gasto';
       document.getElementById('btnSubmitExpense').className = 'btn btn-primary w-100 fw-bold';
-      document.getElementById('btnCancelEditExpense').classList.remove('hidden');
+      document.getElementById('btnCancelEditExpense').classList.remove('d-none');
       document.getElementById('expenseFormPanel').classList.add('border', 'border-primary');
       document.getElementById('amount').focus();
     };
@@ -791,7 +779,7 @@
       document.getElementById('formTitle').textContent = '➕ Registrar Nuevo Gasto';
       document.getElementById('btnSubmitExpense').textContent = 'Guardar Gasto';
       document.getElementById('btnSubmitExpense').className = 'btn btn-success w-100 fw-bold';
-      document.getElementById('btnCancelEditExpense').classList.add('hidden');
+      document.getElementById('btnCancelEditExpense').classList.add('d-none');
       document.getElementById('expenseFormPanel').classList.remove('border', 'border-primary');
       actualizarSubcategorias();
       if (currentUser) {
