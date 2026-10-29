@@ -108,6 +108,22 @@
       border-color: #10b981;
       background: rgba(16, 185, 129, 0.1);
     }
+
+    /* Indicador parpadeante para la actualización cada 5s */
+    .live-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: #10b981;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.2); }
+      100% { opacity: 1; transform: scale(1); }
+    }
   </style>
 </head>
 <body class="p-3 p-md-4">
@@ -283,15 +299,17 @@
         </div>
       </div>
 
-      <!-- WIDGET DEL DÓLAR DE LA BOLSA DE COLOMBIA (SPOT EN TIEMPO REAL) -->
+      <!-- WIDGET DEL DÓLAR DE GOOGLE (ACTUALIZADO EN VIVO CADA 5 SEGUNDOS) -->
       <div class="col-12 col-sm-6 col-xl-3">
         <div class="card-custom p-3 h-100 border-success border-opacity-50">
           <div class="d-flex justify-content-between align-items-center mb-1">
-            <h6 class="text-success small text-uppercase m-0 fw-bold">💵 Dólar Bolsa / TRM</h6>
-            <span class="badge bg-success bg-opacity-25 text-success" style="font-size: 0.65rem;" id="txtDolarStatus">En Vivo</span>
+            <h6 class="text-success small text-uppercase m-0 fw-bold">💵 Dólar Hoy (USD/COP)</h6>
+            <span class="badge bg-success bg-opacity-25 text-success d-flex align-items-center gap-1" style="font-size: 0.65rem;">
+              <span class="live-dot"></span> 5s Live
+            </span>
           </div>
           <div class="fs-4 fw-bold text-success" id="txtDolarTRMValue">$ ---,--</div>
-          <span class="badge bg-body-tertiary border text-muted mt-1" id="txtDolarTRMDate">Consultando bolsa...</span>
+          <span class="badge bg-body-tertiary border text-muted mt-1" id="txtDolarTRMDate">Cargando cotización...</span>
         </div>
       </div>
     </div>
@@ -445,6 +463,7 @@
     let rawExpensesList = [];
     let currentExpensesList = [];
     let selectedCategoryFilter = null;
+    let dolarIntervalId = null;
 
     // --- CONMUTADOR DE TEMA (CLARO / OSCURO) ---
     const btnToggleTheme = document.getElementById('btnToggleTheme');
@@ -495,30 +514,33 @@
       document.getElementById('endDate').value = now.toISOString().split('T')[0];
     }
 
-    // --- CONSULTA EN TIEMPO REAL DEL DÓLAR / TRM EN LA BOLSA DE COLOMBIA ---
-    async function obtenerTasaDolarBolsaColombia() {
+    // --- OBTENCIÓN Y REFRESH AUTOMÁTICO CADA 5 SEGUNDOS DEL DÓLAR HOY ---
+    async function consultarDolarEnVivo() {
       const txtValue = document.getElementById('txtDolarTRMValue');
       const txtDate = document.getElementById('txtDolarTRMDate');
+
       try {
-        // Petición a la API pública de datos oficiales de la TRM en Colombia
-        const response = await fetch('https://www.datos.gov.co/resource/32sa-823r.json?$order=vigenciadesde%20DESC&$limit=1');
-        const data = await response.json();
-        
-        if (data && data.length > 0) {
-          const valorDolar = parseFloat(data[0].valor);
-          const fechaActualizada = new Date(data[0].vigenciadesde).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' });
-          
+        // API en tiempo real de la cotización interbancaria del dólar (USD/COP)
+        const res = await fetch('https://open.er-api.com/v6/latest/USD');
+        const data = await res.json();
+
+        if (data && data.rates && data.rates.COP) {
+          const valorDolar = data.rates.COP;
+          const horaFormateada = new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
           txtValue.textContent = formatearCOP(valorDolar) + ' COP';
-          txtDate.textContent = `Actualizado: ${fechaActualizada}`;
-        } else {
-          txtValue.textContent = '$ 4.162,35 COP';
-          txtDate.textContent = 'TRM Bolsa Colombia';
+          txtDate.textContent = `Actualizado: ${horaFormateada}`;
         }
       } catch (err) {
-        console.warn("Consulta alternativa TRM:", err);
-        txtValue.textContent = '$ 4.162,35 COP';
-        txtDate.textContent = 'TRM Oficial Hoy';
+        console.warn("Error actualizando dólar:", err);
       }
+    }
+
+    function iniciarCicloDolar5s() {
+      consultarDolarEnVivo(); // Consulta inmediata
+      if (dolarIntervalId) clearInterval(dolarIntervalId);
+      // Se ejecuta automáticamente cada 5000 ms (5 segundos) de forma interna
+      dolarIntervalId = setInterval(consultarDolarEnVivo, 5000);
     }
 
     const consejosPorMes = {
@@ -528,7 +550,7 @@
       3: { titulo: "Abril: Obligaciones fiscales", texto: "Mes clave para impuestos. Guarda un fondo de reserva." },
       4: { titulo: "Mayo: Presupuestos familiares", texto: "Establece un tope máximo para reuniones familiares." },
       5: { titulo: "Junio: Prima de mitad de año", texto: "Destina un 30% de ingresos extras al ahorro o deudas." },
-      6: { titulo: "Julio: Vacaciones", texto: "Ajustate strictly al presupuesto de ocio." },
+      6: { titulo: "Julio: Vacaciones", texto: "Ajustate estrictamente al presupuesto de ocio." },
       7: { titulo: "Agosto: Imprevistos", texto: "Mantén al día tu fondo de emergencias." },
       8: { titulo: "Septiembre: Control de deudas", texto: "Aprovecha para acelerar abonos a capital." },
       9: { titulo: "Octubre: Planificación fin de año", texto: "Empieza a cotizar compras navideñas." },
@@ -575,12 +597,13 @@
 
         await resolverGrupoFamiliar();
         escucharPresupuesto();
-        obtenerTasaDolarBolsaColombia();
+        iniciarCicloDolar5s();
       } else {
         currentUser = null;
         currentFamilyOwnerId = null;
         if (unsubscribeExpenses) unsubscribeExpenses();
         if (unsubscribeBudget) unsubscribeBudget();
+        if (dolarIntervalId) clearInterval(dolarIntervalId);
         document.getElementById('authWrapper').classList.remove('d-none');
         document.getElementById('appContainer').classList.add('d-none');
         document.getElementById('userHeader').classList.add('d-none');
