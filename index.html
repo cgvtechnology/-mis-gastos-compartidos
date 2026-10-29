@@ -269,7 +269,7 @@
         </div>
 
         <div class="col-12 col-md-5 d-flex justify-content-between align-items-end gap-2 mt-2 mt-md-0">
-          <button class="btn btn-outline-secondary btn-sm" id="btnResetDates">Quitar Filtro</button>
+          <button class="btn btn-outline-secondary btn-sm" id="btnResetDates">Quitar filtro</button>
           <button class="btn btn-success btn-sm d-flex align-items-center gap-1" id="btnExportExcel">
             <i class="bi bi-file-earmark-excel"></i> Exportar a Excel
           </button>
@@ -879,6 +879,8 @@
       document.getElementById('btnCancelEditExpense').classList.add('d-none');
       document.getElementById('expenseFormPanel').classList.remove('border', 'border-primary');
       actualizarSubcategorias();
+      // Mantener sincronizado el selector del formulario con la vista actual
+      document.getElementById('expenseScope').value = document.getElementById('scopeFilter').value;
       if (currentUser) {
         document.getElementById('payer').value = currentUser.displayName || (currentUser.email ? currentUser.email.split('@')[0] : 'Invitado');
       }
@@ -960,9 +962,14 @@
       aplicarFiltroTiempo();
     });
 
-    document.getElementById('scopeFilter').addEventListener('change', () => {
+    // --- SINCRONIZACIÓN AUTOMÁTICA DEL FORMULARIO CON LA VISTA SUPERIOR ---
+    document.getElementById('scopeFilter').addEventListener('change', (e) => {
       selectedCategoryFilter = null;
       presupuestoInicial = 0;
+      
+      // Sincroniza el selector del formulario automáticamente
+      document.getElementById('expenseScope').value = e.target.value;
+
       const banner = document.getElementById('alertBanner');
       banner.className = "alert d-none";
       banner.innerText = "";
@@ -1146,6 +1153,8 @@
     setInitialDates();
     actualizarSubcategorias();
     document.getElementById('date').valueAsDate = new Date();
+    // Inicializar sincronización del formulario con el filtro actual al cargar
+    document.getElementById('expenseScope').value = document.getElementById('scopeFilter').value;
   </script>
 </body>
 </html>
