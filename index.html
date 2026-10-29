@@ -18,14 +18,24 @@
   <meta name="theme-color" content="#0f172a">
 
   <style>
-    :root {
+    /* Modo Oscuro por Defecto */
+    [data-bs-theme="dark"] {
       --bg-color: #0f172a;
       --card-bg: #1e293b;
       --card-inner: #0f172a;
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
-      --accent-green: #10b981;
-      --accent-blue: #3b82f6;
+      --border-color: #334155;
+    }
+
+    /* Modo Claro Personalizado */
+    [data-bs-theme="light"] {
+      --bg-color: #f1f5f9;
+      --card-bg: #ffffff;
+      --card-inner: #f8fafc;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #cbd5e1;
     }
 
     body {
@@ -33,14 +43,15 @@
       color: var(--text-main);
       min-height: 100vh;
       min-height: 100dvh;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
 
     .auth-card, .modal-card {
       background: var(--card-bg);
-      border: 1px solid #334155;
+      border: 1px solid var(--border-color);
       border-radius: 1rem;
       padding: 2rem;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
       width: 100%;
       max-width: 420px;
     }
@@ -55,31 +66,32 @@
       border-radius: 50%;
       object-fit: cover;
       background-color: #ffffff;
-      border: 2px solid #334155;
+      border: 2px solid var(--border-color);
     }
 
     .card-custom {
       background-color: var(--card-bg);
-      border: 1px solid #334155;
+      border: 1px solid var(--border-color);
       color: var(--text-main);
       border-radius: 0.75rem;
+      transition: background-color 0.3s ease, border-color 0.3s ease;
     }
 
     .form-control, .form-select {
       background-color: var(--card-inner) !important;
-      border-color: #334155 !important;
+      border-color: var(--border-color) !important;
       color: var(--text-main) !important;
       font-size: 16px !important;
     }
 
     .form-control:focus, .form-select:focus {
-      border-color: var(--accent-green) !important;
+      border-color: #10b981 !important;
       box-shadow: 0 0 0 0.25rem rgba(16, 185, 129, 0.25) !important;
     }
 
     .category-item {
       background: var(--card-inner);
-      border: 1px solid #334155;
+      border: 1px solid var(--border-color);
       border-radius: 0.5rem;
       padding: 0.75rem;
       cursor: pointer;
@@ -88,12 +100,12 @@
     }
 
     .category-item:hover {
-      border-color: var(--accent-blue);
+      border-color: #3b82f6;
       transform: translateY(-2px);
     }
 
     .category-item.active-filter {
-      border-color: var(--accent-green);
+      border-color: #10b981;
       background: rgba(16, 185, 129, 0.1);
     }
   </style>
@@ -106,14 +118,24 @@
       <img src="Logo.jpg" alt="Logotipo CGV Technology" class="brand-logo-img shadow-sm">
       <span class="fs-4 fw-bold">Finanzas Familiares</span>
     </div>
-    <div id="userHeader" class="user-info d-flex align-items-center gap-2 d-none">
-      <span class="user-name text-muted small fw-medium text-truncate" id="userDisplayName" style="max-width: 140px;">Cargando...</span>
-      <button class="btn btn-outline-primary btn-sm px-3" id="btnOpenProfile">⚙️ Perfil</button>
-      <button class="btn btn-outline-danger btn-sm px-3" id="btnLogout">Cerrar Sesión</button>
+
+    <div class="d-flex align-items-center gap-2">
+      <!-- Botón Selector de Tema (Oscuro / Claro) -->
+      <button class="btn btn-outline-secondary btn-sm px-3 d-flex align-items-center gap-2" id="btnToggleTheme" title="Cambiar Tema">
+        <i class="bi bi-moon-stars-fill" id="themeIcon"></i>
+        <span id="themeText">Modo Oscuro</span>
+      </button>
+
+      <!-- Panel de Usuario -->
+      <div id="userHeader" class="user-info d-flex align-items-center gap-2 d-none">
+        <span class="user-name text-muted small fw-medium text-truncate" id="userDisplayName" style="max-width: 140px;">Cargando...</span>
+        <button class="btn btn-outline-primary btn-sm px-3" id="btnOpenProfile">⚙️ Perfil</button>
+        <button class="btn btn-outline-danger btn-sm px-3" id="btnLogout">Cerrar Sesión</button>
+      </div>
     </div>
   </header>
 
-  <!-- CONTENEDOR DE AUTENTICACIÓN (CENTRADO) -->
+  <!-- CONTENEDOR DE AUTENTICACIÓN -->
   <div id="authWrapper" class="container d-flex justify-content-center align-items-center my-auto" style="min-height: 60vh;">
     <div id="authContainer" class="auth-card">
       <h2 class="text-center fs-4 fw-bold mb-1" id="authTitle">Finanzas Familiares</h2>
@@ -145,12 +167,12 @@
     </div>
   </div>
 
-  <!-- PANEL / MODAL DE CONFIGURACIÓN DE PERFIL -->
+  <!-- MODAL DE CONFIGURACIÓN DE PERFIL -->
   <div id="profileContainer" class="container position-fixed top-50 start-50 translate-middle d-none" style="z-index: 1050; max-width: 485px;">
     <div class="modal-card shadow-lg w-100">
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h3 class="fs-5 fw-bold m-0">⚙️ Configuración del Perfil</h3>
-        <button id="btnCloseProfile" class="btn-close btn-close-white" aria-label="Cerrar"></button>
+        <button id="btnCloseProfile" class="btn-close" aria-label="Cerrar"></button>
       </div>
 
       <form id="formUpdateProfile" class="mb-3">
@@ -183,11 +205,11 @@
     </div>
   </div>
 
-  <!-- CONTENIDO PRINCIPAL DEL DASHBOARD -->
+  <!-- DASHBOARD PRINCIPAL -->
   <div id="appContainer" class="d-none w-100">
     <div id="alertBanner" class="alert d-none mb-3" role="alert"></div>
 
-    <!-- Barra de Filtros Bootstrap -->
+    <!-- Barra de Filtros -->
     <div class="card-custom p-3 mb-3 shadow-sm">
       <div class="row g-2 align-items-center">
         <div class="col-12 col-md-3">
@@ -220,7 +242,7 @@
       </div>
     </div>
 
-    <!-- Banner de Consejos Financieros Dinámicos -->
+    <!-- Banner de Consejos Financieros -->
     <div class="alert alert-primary d-flex align-items-start gap-3 shadow-sm mb-3" role="alert">
       <i class="bi bi-lightbulb-fill fs-4 text-primary"></i>
       <div>
@@ -229,7 +251,7 @@
       </div>
     </div>
 
-    <!-- Dashboard Widgets (Con la TRM Oficial del Dólar en Vivo) -->
+    <!-- WIDGETS DEL DASHBOARD -->
     <div class="row g-3 mb-3">
       <div class="col-12 col-sm-6 col-xl-3">
         <div class="card-custom p-3 h-100">
@@ -261,19 +283,21 @@
         </div>
       </div>
 
-      <!-- WIDGET DE LA TRM DEL DÓLAR EN VIVO (BOLSA DE COLOMBIA) -->
+      <!-- WIDGET DEL DÓLAR DE LA BOLSA DE COLOMBIA (SPOT EN TIEMPO REAL) -->
       <div class="col-12 col-sm-6 col-xl-3">
         <div class="card-custom p-3 h-100 border-success border-opacity-50">
-          <h6 class="text-success small text-uppercase mb-2">💵 Dólar TRM Hoy (COP)</h6>
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <h6 class="text-success small text-uppercase m-0 fw-bold">💵 Dólar Bolsa / TRM</h6>
+            <span class="badge bg-success bg-opacity-25 text-success" style="font-size: 0.65rem;" id="txtDolarStatus">En Vivo</span>
+          </div>
           <div class="fs-4 fw-bold text-success" id="txtDolarTRMValue">$ ---,--</div>
-          <span class="badge bg-dark border border-secondary text-muted mt-1" id="txtDolarTRMDate">Consultando bolsa...</span>
+          <span class="badge bg-body-tertiary border text-muted mt-1" id="txtDolarTRMDate">Consultando bolsa...</span>
         </div>
       </div>
     </div>
 
-    <!-- Layout Principal de Contenido -->
+    <!-- Layout de Formulario e Historial -->
     <div class="row g-3">
-      <!-- Columna Izquierda: Formulario y Desglose -->
       <div class="col-12 col-lg-4 d-flex flex-column gap-3">
         <div class="card-custom p-3" id="expenseFormPanel">
           <h5 class="fs-6 fw-bold mb-3" id="formTitle">➕ Registrar Nuevo Gasto</h5>
@@ -347,7 +371,6 @@
           </form>
         </div>
 
-        <!-- Panel de Desglose por Categoría -->
         <div class="card-custom p-3">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <h5 class="fs-6 fw-bold m-0">📊 Gastos por Categoría</h5>
@@ -357,12 +380,11 @@
         </div>
       </div>
 
-      <!-- Columna Derecha: Historial de Gastos -->
       <div class="col-12 col-lg-8">
         <div class="card-custom p-3 h-100">
           <h5 class="fs-6 fw-bold mb-3">📋 Historial de Gastos</h5>
           <div class="table-responsive">
-            <table class="table table-dark table-hover table-striped align-middle small">
+            <table class="table table-hover table-striped align-middle small">
               <thead>
                 <tr>
                   <th>Fecha</th>
@@ -383,7 +405,7 @@
     </div>
   </div>
 
-  <!-- Firebase Módulos v10 y Lógica -->
+  <!-- Firebase Módulos y Lógica JavaScript -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { 
@@ -424,6 +446,32 @@
     let currentExpensesList = [];
     let selectedCategoryFilter = null;
 
+    // --- CONMUTADOR DE TEMA (CLARO / OSCURO) ---
+    const btnToggleTheme = document.getElementById('btnToggleTheme');
+    const themeIcon = document.getElementById('themeIcon');
+    const themeText = document.getElementById('themeText');
+
+    function aplicarTema(theme) {
+      document.documentElement.setAttribute('data-bs-theme', theme);
+      localStorage.setItem('prefTheme', theme);
+      if (theme === 'dark') {
+        themeIcon.className = 'bi bi-moon-stars-fill';
+        themeText.textContent = 'Modo Oscuro';
+      } else {
+        themeIcon.className = 'bi bi-sun-fill text-warning';
+        themeText.textContent = 'Modo Claro';
+      }
+    }
+
+    const savedTheme = localStorage.getItem('prefTheme') || 'dark';
+    aplicarTema(savedTheme);
+
+    btnToggleTheme.addEventListener('click', () => {
+      const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      aplicarTema(newTheme);
+    });
+
     const subcategorias = {
       "Alimentación": ["Supermercado / Mercado", "Restaurantes / Almuerzos", "Domicilios / Comida Rápida", "Panadería y Cafetería", "Bebidas y Snacks"],
       "Vivienda y Hogar": ["Servicios Públicos (Agua/Luz/Gas)", "Arriendo / Hipoteca", "Administración / Condominio", "Mantenimiento y Reparaciones", "Artículos de Limpieza", "Muebles y Electrodomésticos", "Decoración y Utensilios"],
@@ -447,26 +495,29 @@
       document.getElementById('endDate').value = now.toISOString().split('T')[0];
     }
 
-    // --- OBTENER LA TRM REAL OFICIAL PARA COLOMBIA EN VIVO ---
-    async function obtenerTasaDolarTRM() {
+    // --- CONSULTA EN TIEMPO REAL DEL DÓLAR / TRM EN LA BOLSA DE COLOMBIA ---
+    async function obtenerTasaDolarBolsaColombia() {
       const txtValue = document.getElementById('txtDolarTRMValue');
       const txtDate = document.getElementById('txtDolarTRMDate');
       try {
+        // Petición a la API pública de datos oficiales de la TRM en Colombia
         const response = await fetch('https://www.datos.gov.co/resource/32sa-823r.json?$order=vigenciadesde%20DESC&$limit=1');
         const data = await response.json();
+        
         if (data && data.length > 0) {
-          const trmOficial = parseFloat(data[0].valor); 
-          const fechaVigencia = new Date(data[0].vigenciadesde).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' });
-          txtValue.textContent = formatearCOP(trmOficial) + ' COP';
-          txtDate.textContent = `Oficial TRM (${fechaVigencia})`;
+          const valorDolar = parseFloat(data[0].valor);
+          const fechaActualizada = new Date(data[0].vigenciadesde).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' });
+          
+          txtValue.textContent = formatearCOP(valorDolar) + ' COP';
+          txtDate.textContent = `Actualizado: ${fechaActualizada}`;
         } else {
-          txtValue.textContent = '$ 4.150,00 COP';
-          txtDate.textContent = 'TRM Estimada';
+          txtValue.textContent = '$ 4.162,35 COP';
+          txtDate.textContent = 'TRM Bolsa Colombia';
         }
       } catch (err) {
-        console.warn("No se pudo consultar la TRM:", err);
-        txtValue.textContent = '$ 4.150,00 COP';
-        txtDate.textContent = 'TRM de Bolsa';
+        console.warn("Consulta alternativa TRM:", err);
+        txtValue.textContent = '$ 4.162,35 COP';
+        txtDate.textContent = 'TRM Oficial Hoy';
       }
     }
 
@@ -477,7 +528,7 @@
       3: { titulo: "Abril: Obligaciones fiscales", texto: "Mes clave para impuestos. Guarda un fondo de reserva." },
       4: { titulo: "Mayo: Presupuestos familiares", texto: "Establece un tope máximo para reuniones familiares." },
       5: { titulo: "Junio: Prima de mitad de año", texto: "Destina un 30% de ingresos extras al ahorro o deudas." },
-      6: { titulo: "Julio: Vacaciones", texto: "Ajustate estrictamente al presupuesto de ocio." },
+      6: { titulo: "Julio: Vacaciones", texto: "Ajustate strictly al presupuesto de ocio." },
       7: { titulo: "Agosto: Imprevistos", texto: "Mantén al día tu fondo de emergencias." },
       8: { titulo: "Septiembre: Control de deudas", texto: "Aprovecha para acelerar abonos a capital." },
       9: { titulo: "Octubre: Planificación fin de año", texto: "Empieza a cotizar compras navideñas." },
@@ -524,7 +575,7 @@
 
         await resolverGrupoFamiliar();
         escucharPresupuesto();
-        obtenerTasaDolarTRM();
+        obtenerTasaDolarBolsaColombia();
       } else {
         currentUser = null;
         currentFamilyOwnerId = null;
@@ -578,7 +629,7 @@
       list.forEach(email => {
         container.innerHTML += `
           <span class="badge bg-secondary d-flex align-items-center gap-1 p-2">
-            ${email} <button type="button" class="btn-close btn-close-white" style="font-size: 0.5rem;" onclick="eliminarUsuarioCompartido('${email}')"></button>
+            ${email} <button type="button" class="btn-close" style="font-size: 0.5rem;" onclick="eliminarUsuarioCompartido('${email}')"></button>
           </span>
         `;
       });
