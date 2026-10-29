@@ -1,14 +1,22 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-bs-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
   <title>Finanzas Familiares y Personales</title>
+  
+  <!-- Bootstrap 5.3 CSS CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <!-- SheetJS para Exportar a Excel -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <!-- Favicon Circular de CGV Technology -->
+
+  <!-- Favicon y PWA manifest -->
   <link rel="icon" type="image/jpeg" href="Logo.jpg">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0f172a">
+
   <style>
     :root {
       --bg-color: #0f172a;
@@ -17,652 +25,74 @@
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
       --accent-green: #10b981;
-      --accent-green-hover: #059669;
       --accent-blue: #3b82f6;
-      --accent-blue-hover: #2563eb;
-      --border-color: #334155;
       --danger: #ef4444;
       --warning: #f59e0b;
       --amazon-orange: #ff9900;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
-
-    html {
-      width: 100%;
-      max-width: 100vw;
-      overflow-x: hidden;
-    }
-
     body {
       background-color: var(--bg-color);
       color: var(--text-main);
-      padding: 16px;
       min-height: 100vh;
       min-height: 100dvh;
-      width: 100%;
-      max-width: 100vw;
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      overflow-x: hidden;
     }
 
-    body:has(#appContainer:not(.hidden)) {
-      justify-content: flex-start;
-      align-items: stretch;
-    }
-
-    @media (min-width: 768px) {
-      body {
-        padding: 24px;
-      }
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
-    /* Navbar superior centrado en celulares en todo momento */
-    header {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      margin-bottom: 20px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid var(--border-color);
-      width: 100%;
-      align-items: center;
-      text-align: center;
-    }
-
-    @media (min-width: 640px) {
-      header {
-        flex-direction: center;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 24px;
-        text-align: left;
-      }
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      font-size: 1.15rem;
-      font-weight: 700;
-      width: 100%;
-    }
-
-    @media (min-width: 640px) {
-      .brand {
-        font-size: 1.25rem;
-        justify-content: flex-start;
-        width: auto;
-      }
-    }
-
-    .brand-logo-img {
-      width: 105px;
-      height: 105px;
-      border-radius: 50%;
-      object-fit: cover;
-      background-color: #ffffff;
-      border: 2px solid var(--border-color);
-      flex-shrink: 0;
-    }
-
-    .user-info {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      width: 100%;
-      flex-wrap: wrap;
-    }
-
-    @media (min-width: 640px) {
-      .user-info {
-        width: auto;
-        justify-content: flex-end;
-        gap: 12px;
-      }
-    }
-
-    .user-name {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      font-weight: 500;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 140px;
-    }
-
-    @media (min-width: 640px) {
-      .user-name {
-        font-size: 0.9rem;
-        max-width: none;
-      }
-    }
-
-    .btn-profile-toggle {
-      background: rgba(59, 130, 246, 0.15);
-      color: var(--accent-blue);
-      border: 1px solid var(--accent-blue);
-      padding: 6px 10px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 0.8rem;
-      transition: all 0.2s;
-    }
-
-    @media (min-width: 640px) {
-      .btn-profile-toggle {
-        padding: 6px 12px;
-        font-size: 0.85rem;
-      }
-    }
-
-    .btn-profile-toggle:hover {
-      background: var(--accent-blue);
-      color: #fff;
-    }
-
-    .btn-logout {
-      background: rgba(239, 68, 68, 0.15);
-      color: var(--danger);
-      border: 1px solid var(--danger);
-      padding: 6px 10px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 0.8rem;
-      transition: all 0.2s;
-    }
-
-    @media (min-width: 640px) {
-      .btn-logout {
-        padding: 6px 12px;
-        font-size: 0.85rem;
-      }
-    }
-
-    .btn-logout:hover {
-      background: var(--danger);
-      color: #fff;
-    }
-
-    /* Modales y Contenedor de Login Adaptable */
-    .auth-container {
-      width: 100% !important;
-      max-width: 400px;
-      box-sizing: border-box;
+    /* Contenedores principales adaptables */
+    .auth-container, .modal-container {
       background: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 16px;
-      padding: 24px 20px;
-      margin: 0 auto;
+      border: 1px solid #334155;
+      border-radius: 1rem;
+      padding: 2rem;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+      width: 100%;
+      max-width: 420px;
+      margin: auto;
     }
 
     .modal-container {
-      width: 100% !important;
       max-width: 480px;
-      box-sizing: border-box;
-      background: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 16px;
-      padding: 24px 20px;
       margin: 20px auto;
     }
 
-    .auth-title {
-      font-size: 1.2rem;
-      font-weight: 700;
-      text-align: center;
-      margin-bottom: 8px;
+    /* Imagen de logotipo redonda */
+    .brand-logo-img {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      object-fit: cover;
+      background-color: #ffffff;
+      border: 2px solid #334155;
     }
 
-    @media (min-width: 640px) {
-      .auth-title {
-        font-size: 1.3rem;
-      }
-    }
-
-    .auth-subtitle {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    .btn-secondary {
-      width: 100%;
-      background: var(--card-inner);
+    /* Estilos personalizados para tarjetas y paneles Bootstrap */
+    .card-custom {
+      background-color: var(--card-bg);
+      border: 1px solid #334155;
       color: var(--text-main);
-      border: 1px solid var(--border-color);
-      padding: 12px;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 12px;
-      font-size: 0.9rem;
+      border-radius: 0.75rem;
     }
 
-    .toggle-auth {
-      text-align: center;
-      margin-top: 20px;
-      font-size: 0.85rem;
-      color: var(--text-muted);
+    .form-control, .form-select {
+      background-color: var(--card-inner) !important;
+      border-color: #334155 !important;
+      color: var(--text-main) !important;
+      font-size: 16px !important; /* Previene zoom automático en móviles */
     }
 
-    .toggle-auth a {
-      color: var(--accent-green);
-      text-decoration: none;
-      font-weight: 600;
-      cursor: pointer;
+    .form-control:focus, .form-select:focus {
+      border-color: var(--accent-green) !important;
+      box-shadow: 0 0 0 0.25rem rgba(16, 185, 129, 0.25) !important;
     }
 
-    .forgot-password {
-      text-align: right;
-      margin-top: 6px;
-      margin-bottom: 12px;
-      font-size: 0.8rem;
-    }
-
-    .forgot-password a {
-      color: var(--accent-blue);
-      text-decoration: none;
-      cursor: pointer;
-    }
-
-    .forgot-password a:hover {
-      text-decoration: underline;
-    }
-
-    /* Banner de Alerta */
-    .alert-banner {
-      display: none;
-      padding: 12px 16px;
-      border-radius: 10px;
-      margin-bottom: 20px;
-      font-weight: 600;
-      font-size: 0.85rem;
-    }
-
-    @media (min-width: 640px) {
-      .alert-banner {
-        padding: 14px 20px;
-        margin-bottom: 24px;
-        font-size: 0.95rem;
-      }
-    }
-
-    .alert-banner.warning {
-      display: block;
-      background: rgba(245, 158, 11, 0.15);
-      border: 1px solid var(--warning);
-      color: #fbbf24;
-    }
-
-    .alert-banner.danger {
-      display: block;
-      background: rgba(239, 68, 68, 0.15);
-      border: 1px solid var(--danger);
-      color: #f87171;
-    }
-
-    /* Banner de Consejos Financieros */
-    .advice-banner {
-      background: rgba(59, 130, 246, 0.1);
-      border: 1px solid var(--accent-blue);
-      border-radius: 12px;
-      padding: 14px 18px;
-      margin-bottom: 20px;
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-    }
-
-    .advice-icon {
-      font-size: 1.5rem;
-      flex-shrink: 0;
-      line-height: 1;
-    }
-
-    .advice-content h5 {
-      font-size: 0.9rem;
-      font-weight: 700;
-      color: var(--accent-blue);
-      margin-bottom: 4px;
-    }
-
-    .advice-content p {
-      font-size: 0.82rem;
-      color: var(--text-main);
-      line-height: 1.4;
-    }
-
-    /* Barra de Filtros */
-    .filter-bar {
-      background: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 12px 16px;
-      margin-bottom: 20px;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .filter-group-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      width: 100%;
-      align-items: center;
-    }
-
-    @media (min-width: 640px) {
-      .filter-group-container {
-        width: auto;
-      }
-    }
-
-    .filter-group {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .filter-group label {
-      margin-bottom: 0;
-      white-space: nowrap;
-    }
-
-    .filter-group select, .filter-group input[type="date"] {
-      padding: 6px 10px;
-      font-size: 0.85rem;
-      border-radius: 6px;
-    }
-
-    .btn-reset-dates {
-      background: rgba(255, 255, 255, 0.08);
-      color: var(--text-muted);
-      border: 1px solid var(--border-color);
-      padding: 6px 10px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 0.8rem;
-    }
-
-    .btn-reset-dates:hover {
-      color: var(--text-main);
-      background: var(--border-color);
-    }
-
-    .btn-export {
-      background: rgba(16, 185, 129, 0.2);
-      color: var(--accent-green);
-      border: 1px solid var(--accent-green);
-      padding: 6px 14px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 0.85rem;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .btn-export:hover {
-      background: var(--accent-green);
-      color: #fff;
-    }
-
-    /* Widgets Superiores */
-    .dashboard {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-
-    @media (min-width: 640px) {
-      .dashboard {
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 16px;
-        margin-bottom: 24px;
-      }
-    }
-
-    .widget {
-      background: var(--card-bg);
-      padding: 16px;
-      border-radius: 12px;
-      border: 1px solid var(--border-color);
-    }
-
-    @media (min-width: 640px) {
-      .widget {
-        padding: 20px;
-      }
-    }
-
-    .widget h4 {
-      color: var(--text-muted);
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 6px;
-    }
-
-    .widget .amount {
-      font-size: 1.35rem;
-      font-weight: 700;
-      color: var(--text-main);
-    }
-
-    @media (min-width: 640px) {
-      .widget .amount {
-        font-size: 1.6rem;
-      }
-    }
-
-    .widget-input {
-      display: flex;
-      gap: 8px;
-      margin-top: 10px;
-    }
-
-    .widget-input input {
-      background: var(--card-inner);
-      border: 1px solid var(--border-color);
-      padding: 8px 12px;
-      border-radius: 6px;
-      color: #fff;
-      width: 100%;
-    }
-
-    .widget-input button {
-      background: var(--accent-blue);
-      border: none;
-      padding: 8px 12px;
-      border-radius: 6px;
-      color: #fff;
-      font-weight: 600;
-      cursor: pointer;
-      flex-shrink: 0;
-    }
-
-    .btn-edit-presupuesto {
-      background: rgba(59, 130, 246, 0.15);
-      color: var(--accent-blue);
-      border: 1px solid var(--accent-blue);
-      padding: 4px 10px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 0.8rem;
-      transition: all 0.2s;
-    }
-
-    .btn-edit-presupuesto:hover {
-      background: var(--accent-blue);
-      color: #fff;
-    }
-
-    /* Layout Principal Responsivo */
-    .main-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 20px;
-    }
-
-    @media (min-width: 960px) {
-      .main-grid {
-        grid-template-columns: 360px 1fr;
-        gap: 24px;
-      }
-    }
-
-    .panel {
-      background: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 16px;
-      transition: border-color 0.3s;
-    }
-
-    @media (min-width: 640px) {
-      .panel {
-        padding: 24px;
-      }
-    }
-
-    .panel.editing-mode {
-      border-color: var(--accent-blue);
-      box-shadow: 0 0 10px rgba(59, 130, 246, 0.2);
-    }
-
-    .panel-title {
-      font-size: 1rem;
-      font-weight: 600;
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    @media (min-width: 640px) {
-      .panel-title {
-        font-size: 1.1rem;
-        margin-bottom: 20px;
-      }
-    }
-
-    /* Formularios Responsivos */
-    .form-group {
-      margin-bottom: 14px;
-    }
-
-    .form-group.row {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 12px;
-    }
-
-    @media (min-width: 480px) {
-      .form-group.row {
-        grid-template-columns: 1fr 1fr;
-      }
-    }
-
-    label {
-      display: block;
-      font-size: 0.7rem;
-      font-weight: 700;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      margin-bottom: 4px;
-    }
-
-    input, select {
-      width: 100%;
-      background: var(--card-inner);
-      border: 1px solid var(--border-color);
-      padding: 12px 14px;
-      border-radius: 10px;
-      color: var(--text-main);
-      font-size: 16px !important;
-      outline: none;
-      -webkit-appearance: none;
-    }
-
-    input:focus, select:focus {
-      border-color: var(--accent-green);
-    }
-
-    .btn-submit {
-      width: 100%;
-      background: var(--accent-green);
-      color: #fff;
-      border: none;
-      padding: 14px;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: background 0.2s;
-      margin-top: 6px;
-    }
-
-    .btn-submit:hover {
-      background: var(--accent-green-hover);
-    }
-
-    .btn-cancel-edit {
-      width: 100%;
-      background: var(--card-inner);
-      color: var(--text-muted);
-      border: 1px solid var(--border-color);
-      padding: 10px;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 8px;
-    }
-
-    .btn-cancel-edit:hover {
-      color: var(--text-main);
-      border-color: var(--text-muted);
-    }
-
-    /* Estilos para el Desglose por Categoría Clicable */
-    .category-summary-list {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
+    /* Categorías clicables con efecto hover */
     .category-item {
       background: var(--card-inner);
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      padding: 12px;
+      border: 1px solid #334155;
+      border-radius: 0.5rem;
+      padding: 0.75rem;
       cursor: pointer;
       transition: all 0.2s ease;
       user-select: none;
@@ -678,357 +108,205 @@
       background: rgba(16, 185, 129, 0.1);
       box-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
     }
-
-    .category-item-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 6px;
-      font-size: 0.85rem;
-    }
-
-    .category-name {
-      font-weight: 600;
-      color: var(--text-main);
-    }
-
-    .category-total {
-      font-weight: 700;
-      color: var(--accent-blue);
-    }
-
-    .progress-bar-bg {
-      width: 100%;
-      height: 6px;
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: 4px;
-      overflow: hidden;
-    }
-
-    .progress-bar-fill {
-      height: 100%;
-      background: var(--accent-blue);
-      border-radius: 4px;
-      transition: width 0.3s ease;
-    }
-
-    /* Tabla Adaptable */
-    .table-container {
-      width: 100%;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      border-radius: 8px;
-    }
-
-    table {
-      width: 100%;
-      min-width: 600px;
-      border-collapse: collapse;
-      text-align: left;
-    }
-
-    th {
-      padding: 10px 12px;
-      color: var(--text-muted);
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      border-bottom: 1px solid var(--border-color);
-    }
-
-    td {
-      padding: 12px;
-      border-bottom: 1px solid var(--border-color);
-      font-size: 0.85rem;
-    }
-
-    .badge {
-      display: inline-block;
-      padding: 3px 6px;
-      border-radius: 6px;
-      font-size: 0.7rem;
-      background: rgba(255, 255, 255, 0.08);
-      color: var(--text-muted);
-      margin-top: 4px;
-    }
-
-    .badge-scope-family {
-      background: rgba(16, 185, 129, 0.15);
-      color: var(--accent-green);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-    }
-
-    .badge-scope-personal {
-      background: rgba(59, 130, 246, 0.15);
-      color: var(--accent-blue);
-      border: 1px solid rgba(59, 130, 246, 0.3);
-    }
-
-    .action-buttons {
-      display: flex;
-      gap: 6px;
-    }
-
-    .btn-edit-item {
-      background: rgba(59, 130, 246, 0.15);
-      color: var(--accent-blue);
-      border: 1px solid var(--accent-blue);
-      padding: 6px 10px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 0.8rem;
-      transition: all 0.2s;
-    }
-
-    .btn-edit-item:hover {
-      background: var(--accent-blue);
-      color: #fff;
-    }
-
-    .btn-delete {
-      background: rgba(239, 68, 68, 0.15);
-      color: var(--danger);
-      border: 1px solid var(--danger);
-      padding: 6px 10px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 0.8rem;
-      transition: all 0.2s;
-    }
-
-    .btn-delete:hover {
-      background: var(--danger);
-      color: #fff;
-    }
-
-    .profile-section {
-      border-top: 1px solid var(--border-color);
-      padding-top: 16px;
-      margin-top: 16px;
-    }
-
-    .tag-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 8px;
-    }
-
-    .email-tag {
-      background: var(--card-inner);
-      border: 1px solid var(--border-color);
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-size: 0.8rem;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .email-tag button {
-      background: none;
-      border: none;
-      color: var(--danger);
-      cursor: pointer;
-      font-weight: bold;
-    }
   </style>
 </head>
-<body>
+<body class="p-3 p-md-4">
 
-  <!-- Header / Navbar -->
-  <header>
-    <div class="brand">
-      <img src="Logo.jpg" alt="Logotipo CGV Technology" class="brand-logo-img">
+  <!-- Header / Navbar Superior -->
+  <header class="d-flex flex-column flex-sm-row justify-content-between align-items-center pb-3 mb-4 border-bottom border-secondary">
+    <div class="brand d-flex align-items-center gap-3 mb-3 mb-sm-0">
+      <img src="Logo.jpg" alt="Logotipo CGV Technology" class="brand-logo-img shadow-sm">
+      <span class="fs-4 fw-bold">Finanzas Familiares</span>
     </div>
-    <div id="userHeader" class="user-info hidden">
-      <span class="user-name" id="userDisplayName">Cargando...</span>
-      <button class="btn-profile-toggle" id="btnOpenProfile">⚙️ Mi Perfil</button>
-      <button class="btn-logout" id="btnLogout">Cerrar Sesión</button>
+    <div id="userHeader" class="user-info d-flex align-items-center gap-2 hidden">
+      <span class="user-name text-muted small fw-medium text-truncate" id="userDisplayName" style="max-width: 140px;">Cargando...</span>
+      <button class="btn btn-outline-primary btn-sm px-3" id="btnOpenProfile">⚙️ Perfil</button>
+      <button class="btn btn-outline-danger btn-sm px-3" id="btnLogout">Cerrar Sesión</button>
     </div>
   </header>
 
   <!-- PANTALLA DE INICIO DE SESIÓN -->
   <div id="authContainer" class="auth-container">
-    <div class="auth-title" id="authTitle">Finanzas Familiares y Personales</div>
-    <div class="auth-subtitle">Sincroniza y controla tus gastos individuales o del hogar en tiempo real</div>
+    <h2 class="text-center fs-4 fw-bold mb-1" id="authTitle">Finanzas Familiares y Personales</h2>
+    <p class="text-center text-muted small mb-4">Sincroniza y controla tus gastos individuales o del hogar en tiempo real</p>
 
     <form id="authForm">
-      <div class="form-group">
-        <label>Correo Electrónico</label>
-        <input type="email" id="authEmail" placeholder="tu@email.com" required />
+      <div class="mb-3">
+        <label class="form-label small fw-bold text-muted">Correo Electrónico</label>
+        <input type="email" class="form-control" id="authEmail" placeholder="tu@email.com" required />
       </div>
-      <div class="form-group">
-        <label>Contraseña</label>
-        <input type="password" id="authPassword" placeholder="••••••••" required />
-      </div>
-
-      <!-- Enlace para recuperar contraseña -->
-      <div class="forgot-password">
-        <a id="btnForgotPassword">¿Olvidaste tu contraseña?</a>
+      <div class="mb-2">
+        <label class="form-label small fw-bold text-muted">Contraseña</label>
+        <input type="password" class="form-control" id="authPassword" placeholder="••••••••" required />
       </div>
 
-      <button type="submit" class="btn-submit" id="btnAuthSubmit">Iniciar Sesión</button>
+      <div class="text-end mb-3">
+        <a id="btnForgotPassword" class="small text-decoration-none text-primary" style="cursor: pointer;">¿Olvidaste tu contraseña?</a>
+      </div>
+
+      <button type="submit" class="btn btn-success w-100 fw-bold py-2 mb-2" id="btnAuthSubmit">Iniciar Sesión</button>
     </form>
 
-    <button type="button" class="btn-secondary" id="btnDemo">Entrar Modo Invitado / Demo</button>
+    <button type="button" class="btn btn-outline-secondary w-100 fw-semibold py-2" id="btnDemo">Entrar Modo Invitado / Demo</button>
 
-    <div class="toggle-auth">
+    <div class="text-center mt-3 small text-muted">
       <span id="toggleText">¿No tienes cuenta?</span>
-      <a id="btnToggleAuth">Regístrate aquí</a>
+      <a id="btnToggleAuth" class="text-success text-decoration-none fw-bold ms-1" style="cursor: pointer;">Regístrate aquí</a>
     </div>
   </div>
 
-  <!-- PANEL / MODAL DE CONFIGURACIÓN DE PERFIL -->
+  <!-- MODAL / PANEL DE CONFIGURACIÓN DE PERFIL -->
   <div id="profileContainer" class="modal-container hidden">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-      <h3 style="font-size: 1.1rem;">⚙️ Configuración del Perfil</h3>
-      <button id="btnCloseProfile" style="background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer;">✕</button>
+    <div class="d-flex justify-content-between align-items: center mb-3">
+      <h3 class="fs-5 fw-bold m-0">⚙️ Configuración del Perfil</h3>
+      <button id="btnCloseProfile" class="btn-close btn-close-white" aria-label="Cerrar"></button>
     </div>
 
     <!-- 1. Nombre de Usuario -->
-    <form id="formUpdateProfile" class="form-group">
-      <label>Nombre de Usuario / Apodo</label>
-      <div style="display: flex; gap: 8px;">
-        <input type="text" id="profileDisplayName" placeholder="Tu nombre" required />
-        <button type="submit" class="btn-edit-presupuesto" style="white-space: nowrap;">Actualizar</button>
+    <form id="formUpdateProfile" class="mb-3">
+      <label class="form-label small fw-bold text-muted">Nombre de Usuario / Apodo</label>
+      <div class="input-group">
+        <input type="text" class="form-control" id="profileDisplayName" placeholder="Tu nombre" required />
+        <button type="submit" class="btn btn-outline-primary">Actualizar</button>
       </div>
     </form>
 
     <!-- 2. Permisos y Compartir Finanzas -->
-    <div class="profile-section">
-      <label>👥 Compartir Finanzas Familiares Con</label>
-      <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">
-        Ingresa los correos de tu familia para autorizarles ver y registrar gastos compartidos.
-      </p>
-      <form id="formAddSharedUser" style="display: flex; gap: 8px; margin-bottom: 8px;">
-        <input type="email" id="inputSharedEmail" placeholder="familiar@ejemplo.com" required />
-        <button type="submit" class="btn-submit" style="width: auto; padding: 8px 12px; margin-top: 0; background: var(--accent-blue);">Agregar</button>
+    <div class="border-top border-secondary pt-3 mb-3">
+      <label class="form-label small fw-bold text-muted">👥 Compartir Finanzas Familiares Con</label>
+      <p class="text-muted" style="font-size: 0.75rem;">Ingresa los correos de tu familia para autorizarles ver y registrar gastos.</p>
+      
+      <form id="formAddSharedUser" class="input-group mb-2">
+        <input type="email" class="form-control" id="inputSharedEmail" placeholder="familiar@ejemplo.com" required />
+        <button type="submit" class="btn btn-primary">Agregar</button>
       </form>
-
-      <div id="sharedUsersList" class="tag-container"></div>
+      <div id="sharedUsersList" class="d-flex flex-wrap gap-1"></div>
     </div>
 
     <!-- 3. Correo Electrónico -->
-    <div class="profile-section">
-      <form id="formUpdateEmail" class="form-group">
-        <label>Nuevo Correo Electrónico</label>
-        <input type="email" id="profileEmail" placeholder="nuevo@correo.com" required style="margin-bottom: 8px;" />
-        <input type="password" id="profileEmailCurrentPass" placeholder="Contraseña actual para confirmar" required style="margin-bottom: 8px;" />
-        <button type="submit" class="btn-submit" style="background: var(--accent-blue);">Cambiar Correo</button>
+    <div class="border-top border-secondary pt-3">
+      <form id="formUpdateEmail">
+        <label class="form-label small fw-bold text-muted">Nuevo Correo Electrónico</label>
+        <input type="email" class="form-control mb-2" id="profileEmail" placeholder="nuevo@correo.com" required />
+        <input type="password" class="form-control mb-2" id="profileEmailCurrentPass" placeholder="Contraseña actual para confirmar" required />
+        <button type="submit" class="btn btn-primary w-100">Cambiar Correo</button>
       </form>
     </div>
   </div>
 
-  <!-- CONTENIDO DEL DASHBOARD -->
-  <div id="appContainer" class="hidden" style="width: 100%;">
-    <div id="alertBanner" class="alert-banner"></div>
+  <!-- CONTENIDO PRINCIPAL DEL DASHBOARD -->
+  <div id="appContainer" class="hidden w-100">
+    <div id="alertBanner" class="alert d-none mb-3" role="alert"></div>
 
-    <!-- Barra de Filtros -->
-    <div class="filter-bar">
-      <div class="filter-group-container">
-        <!-- Selector de Espacio (Personal vs Familiar) -->
-        <div class="filter-group">
-          <label style="font-size: 0.8rem;">📁 Vista:</label>
-          <select id="scopeFilter" style="border-color: var(--accent-blue); font-weight: 600;">
+    <!-- Barra de Filtros Bootstrap -->
+    <div class="card-custom p-3 mb-3 shadow-sm">
+      <div class="row g-2 align-items-center">
+        <div class="col-12 col-md-3">
+          <label class="form-label small fw-bold text-muted mb-1">📁 Vista:</label>
+          <select id="scopeFilter" class="form-select form-select-sm border-primary fw-bold">
             <option value="family" selected>🏠 Finanzas Familiares / Compartidas</option>
             <option value="personal">👤 Mis Finanzas Personales (Privadas)</option>
           </select>
         </div>
 
-        <!-- Rango de Fechas -->
-        <div class="filter-group">
-          <label style="font-size: 0.8rem;">📅 Desde:</label>
-          <input type="date" id="startDate" />
+        <div class="col-6 col-md-2">
+          <label class="form-label small fw-bold text-muted mb-1">📅 Desde:</label>
+          <input type="date" id="startDate" class="form-control form-control-sm" />
         </div>
-        <div class="filter-group">
-          <label style="font-size: 0.8rem;">Hasta:</label>
-          <input type="date" id="endDate" />
-        </div>
-        <button class="btn-reset-dates" id="btnResetDates" title="Mostrar mes actual">Restablecer Mes</button>
-      </div>
 
-      <div style="display: flex; align-items: center; gap: 12px; width: 100%; justify-content: space-between; margin-top: 4px;">
-        <div style="font-size: 0.8rem; color: var(--text-muted);" id="txtFilterRange">
-          Mostrando gastos del mes
+        <div class="col-6 col-md-2">
+          <label class="form-label small fw-bold text-muted mb-1">Hasta:</label>
+          <input type="date" id="endDate" class="form-control form-control-sm" />
         </div>
-        <button class="btn-export" id="btnExportExcel">
-          📊 Exportar a Excel
-        </button>
+
+        <div class="col-12 col-md-5 d-flex justify-content-between align-items-end gap-2 mt-2 mt-md-0">
+          <button class="btn btn-outline-secondary btn-sm" id="btnResetDates">Restablecer Mes</button>
+          <button class="btn btn-success btn-sm d-flex align-items-center gap-1" id="btnExportExcel">
+            <i class="bi bi-file-earmark-excel"></i> Exportar a Excel
+          </button>
+        </div>
+      </div>
+      <div class="row mt-2">
+        <div class="col-12 small text-muted" id="txtFilterRange">Mostrando gastos del mes</div>
       </div>
     </div>
 
     <!-- Banner de Consejos Financieros Dinámicos -->
-    <div class="advice-banner">
-      <div class="advice-icon">💡</div>
-      <div class="advice-content">
-        <h5 id="adviceTitle">Consejo Financiero del Mes</h5>
-        <p id="adviceText">Cargando sugerencia financiera...</p>
+    <div class="alert alert-primary d-flex align-items-start gap-3 shadow-sm mb-3" role="alert">
+      <i class="bi bi-lightbulb-fill fs-4 text-primary"></i>
+      <div>
+        <h6 class="alert-heading fw-bold mb-1" id="adviceTitle">Consejo Financiero del Mes</h6>
+        <p class="mb-0 small" id="adviceText">Cargando sugerencia financiera...</p>
       </div>
     </div>
 
-    <!-- Dashboard Superior -->
-    <div class="dashboard">
-      <div class="widget">
-        <h4 id="lblPresupuestoTitle">Fondo Inicial (Familiar)</h4>
-        
-        <div id="viewPresupuestoContainer" style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-          <div class="amount" id="txtPresupuesto">$ 0,00</div>
-          <button id="btnEditarPresupuesto" class="btn-edit-presupuesto">✏️ Editar</button>
+    <!-- Dashboard Widgets (Tarjetas Superiores) -->
+    <div class="row g-3 mb-3">
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card-custom p-3 h-100">
+          <h6 class="text-muted small text-uppercase mb-2" id="lblPresupuestoTitle">Fondo Inicial</h6>
+          <div class="d-flex justify-content-between align-items-center" id="viewPresupuestoContainer">
+            <span class="fs-4 fw-bold" id="txtPresupuesto">$ 0,00</span>
+            <button id="btnEditarPresupuesto" class="btn btn-outline-primary btn-sm">✏️ Editar</button>
+          </div>
+          <div id="editPresupuestoContainer" class="input-group input-group-sm mt-2 hidden">
+            <input type="number" id="inputPresupuesto" class="form-control" step="0.01" placeholder="Nuevo monto..." />
+            <button class="btn btn-primary" id="btnFijarPresupuesto">Guardar</button>
+            <button class="btn btn-outline-secondary" id="btnCancelarPresupuesto">✕</button>
+          </div>
         </div>
+      </div>
 
-        <div id="editPresupuestoContainer" class="widget-input hidden">
-          <input type="number" id="inputPresupuesto" step="0.01" placeholder="Nuevo monto inicial..." />
-          <button id="btnFijarPresupuesto">Guardar</button>
-          <button id="btnCancelarPresupuesto" style="background: var(--border-color); color: var(--text-muted);">✕</button>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card-custom p-3 h-100">
+          <h6 class="text-muted small text-uppercase mb-2">Fondo Restante</h6>
+          <span class="fs-4 fw-bold text-success" id="txtDisponible">$ 0,00</span>
         </div>
       </div>
 
-      <div class="widget">
-        <h4>Fondo Restante</h4>
-        <div class="amount" id="txtDisponible">$ 0,00</div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card-custom p-3 h-100">
+          <h6 class="text-muted small text-uppercase mb-2">Mayor Categoría de Gasto</h6>
+          <div class="fs-5 fw-bold text-truncate" id="txtMayorGasto">N/A</div>
+          <span class="badge bg-secondary mt-1" id="txtMontoMayorGasto">$ 0,00</span>
+        </div>
       </div>
 
-      <div class="widget">
-        <h4>Mayor Categoría de Gasto</h4>
-        <div class="amount" id="txtMayorGasto">N/A</div>
-        <span class="badge" id="txtMontoMayorGasto">$ 0,00</span>
-      </div>
-
-      <!-- WIDGET DE TASA DE CAMBIO AMAZON COLOMBIA -->
-      <div class="widget" style="border-color: rgba(255, 153, 0, 0.4);">
-        <h4>🛒 Tasa Amazon Hoy (COP)</h4>
-        <div class="amount" id="txtAmazonTRMValue" style="color: var(--amazon-orange);">$ ---,--</div>
-        <span class="badge" id="txtAmazonTRMDate">Calculando tasa Amazon...</span>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card-custom p-3 h-100 border-warning border-opacity-50">
+          <h6 class="text-warning small text-uppercase mb-2">🛒 Tasa Amazon Hoy (COP)</h6>
+          <div class="fs-4 fw-bold text-warning" id="txtAmazonTRMValue">$ ---,--</div>
+          <span class="badge bg-dark border border-secondary text-muted mt-1" id="txtAmazonTRMDate">Calculando...</span>
+        </div>
       </div>
     </div>
 
-    <!-- Layout Principal -->
-    <div class="main-grid">
-      <!-- Columna Izquierda: Formulario + Resumen de Categorías Clicable -->
-      <div style="display: flex; flex-direction: column; gap: 20px;">
-        <!-- Formulario Registro -->
-        <div class="panel" id="expenseFormPanel">
-          <div class="panel-title" id="formTitle">➕ Registrar Nuevo Gasto</div>
+    <!-- Layout Principal de Contenido -->
+    <div class="row g-3">
+      <!-- Columna Izquierda: Formulario y Desglose -->
+      <div class="col-12 col-lg-4 d-flex flex-column gap-3">
+        <!-- Formulario de Registro -->
+        <div class="card-custom p-3" id="expenseFormPanel">
+          <h5 class="fs-6 fw-bold mb-3" id="formTitle">➕ Registrar Nuevo Gasto</h5>
           <form id="expenseForm">
             <input type="hidden" id="editingExpenseId" value="" />
 
-            <!-- Selector del Espacio para el nuevo gasto -->
-            <div class="form-group">
-              <label>Guardar Gasto En</label>
-              <select id="expenseScope" required style="background: rgba(59, 130, 246, 0.1); border-color: var(--accent-blue); font-weight: 600;">
+            <div class="mb-2">
+              <label class="form-label small fw-bold text-muted">Guardar Gasto En</label>
+              <select id="expenseScope" class="form-select form-select-sm border-primary fw-bold">
                 <option value="family" selected>🏠 Finanzas Familiares / Compartidas</option>
                 <option value="personal">👤 Mis Finanzas Personales (Privado)</option>
               </select>
             </div>
 
-            <div class="form-group">
-              <label>Monto ($ COP)</label>
-              <input type="number" id="amount" step="0.01" min="0" placeholder="0.00" required />
+            <div class="mb-2">
+              <label class="form-label small fw-bold text-muted">Monto ($ COP)</label>
+              <input type="number" class="form-control form-control-sm" id="amount" step="0.01" min="0" placeholder="0.00" required />
             </div>
 
-            <div class="form-group">
-              <label>Categoría</label>
-              <select id="category" required>
+            <div class="mb-2">
+              <label class="form-label small fw-bold text-muted">Categoría</label>
+              <select id="category" class="form-select form-select-sm" required>
                 <option value="Alimentación">🛒 Alimentación</option>
                 <option value="Vivienda y Hogar">🏠 Vivienda y Hogar</option>
                 <option value="Transporte y Vehículos">🚗 Transporte y Vehículos</option>
@@ -1045,80 +323,78 @@
               </select>
             </div>
 
-            <div class="form-group">
-              <label>Subcategoría</label>
-              <select id="subcategory" required></select>
+            <div class="mb-2">
+              <label class="form-label small fw-bold text-muted">Subcategoría</label>
+              <select id="subcategory" class="form-select form-select-sm" required></select>
             </div>
 
-            <div class="form-group">
-              <label>Descripción / Detalle</label>
-              <input type="text" id="description" placeholder="Ej: Compra de almuerzo, peaje, consulta médica..." required />
+            <div class="mb-2">
+              <label class="form-label small fw-bold text-muted">Descripción / Detalle</label>
+              <input type="text" class="form-control form-control-sm" id="description" placeholder="Ej: Compra de almuerzo..." required />
             </div>
 
-            <div class="form-group row">
-              <div>
-                <label>Método de Pago</label>
-                <select id="method">
+            <div class="row g-2 mb-2">
+              <div class="col-6">
+                <label class="form-label small fw-bold text-muted">Método</label>
+                <select id="method" class="form-select form-select-sm">
                   <option value="Efectivo">Efectivo</option>
                   <option value="Tarjeta">Tarjeta</option>
                   <option value="Transferencia">Transferencia</option>
                 </select>
               </div>
-              <div>
-                <label>Pagado Por</label>
-                <input type="text" id="payer" placeholder="Nombre" required />
+              <div class="col-6">
+                <label class="form-label small fw-bold text-muted">Pagado Por</label>
+                <input type="text" class="form-control form-control-sm" id="payer" placeholder="Nombre" required />
               </div>
             </div>
 
-            <div class="form-group">
-              <label>Fecha</label>
-              <input type="date" id="date" required />
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-muted">Fecha</label>
+              <input type="date" class="form-control form-control-sm" id="date" required />
             </div>
 
-            <button type="submit" class="btn-submit" id="btnSubmitExpense">Guardar Gasto</button>
-            <button type="button" class="btn-cancel-edit hidden" id="btnCancelEditExpense">Cancelar Edición</button>
+            <button type="submit" class="btn btn-success w-100 fw-bold" id="btnSubmitExpense">Guardar Gasto</button>
+            <button type="button" class="btn btn-outline-secondary w-100 mt-2 hidden" id="btnCancelEditExpense">Cancelar Edición</button>
           </form>
         </div>
 
-        <!-- Panel de Desglose de Totales por Categoría -->
-        <div class="panel">
-          <div class="panel-title" style="justify-content: space-between;">
-            <span>📊 Total Gastado por Categoría</span>
-            <span id="lblSelectedCategoryFilter" style="font-size: 0.75rem; color: var(--accent-green); font-weight: normal;"></span>
+        <!-- Panel de Desglose por Categoría -->
+        <div class="card-custom p-3">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fs-6 fw-bold m-0">📊 Gastos por Categoría</h5>
+            <span id="lblSelectedCategoryFilter" class="small text-success"></span>
           </div>
-          <div id="categorySummaryContainer" class="category-summary-list">
-            <!-- Carga dinámica -->
-          </div>
+          <div id="categorySummaryContainer" class="d-flex flex-column gap-2"></div>
         </div>
       </div>
 
-      <!-- Columna Derecha: Historial -->
-      <div class="panel">
-        <div class="panel-title">📋 Historial de Gastos</div>
-        <div class="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>Fecha</th>
-                <th>Espacio</th>
-                <th>Categoría / Subcat.</th>
-                <th>Detalle</th>
-                <th>Pagado Por</th>
-                <th>Método</th>
-                <th>Monto</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody id="tablaGastos">
-              <!-- Carga dinámica -->
-            </tbody>
-          </table>
+      <!-- Columna Derecha: Historial de Gastos con Tabla Bootstrap -->
+      <div class="col-12 col-lg-8">
+        <div class="card-custom p-3 h-100">
+          <h5 class="fs-6 fw-bold mb-3">📋 Historial de Gastos</h5>
+          <div class="table-responsive">
+            <table class="table table-dark table-hover table-striped align-middle small">
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Espacio</th>
+                  <th>Categoría</th>
+                  <th>Detalle</th>
+                  <th>Pagado Por</th>
+                  <th>Método</th>
+                  <th>Monto</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tablaGastos"></tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Firebase Módulos v10 y Lógica Completa -->
+  <!-- Firebase Módulos v10 y Lógica de la Aplicación -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { 
@@ -1196,7 +472,7 @@
           txtDate.textContent = `Aprox. Amazon (${fechaVigencia})`;
         } else {
           txtValue.textContent = '$ 3.264,35 COP';
-          txtDate.textContent = 'Estimado Amazon Colombia';
+          txtDate.textContent = 'Estimado Amazon';
         }
       } catch (err) {
         txtValue.textContent = '$ 3.264,35 COP';
@@ -1205,18 +481,18 @@
     }
 
     const consejosPorMes = {
-      0: { titulo: "Enero: La cuesta de enero y planificación inicial", texto: "Prioriza pagar las deudas acumuladas de fin de año y fija tu presupuesto anual." },
-      1: { titulo: "Febrero: Matrículas y temporada escolar", texto: "Monitorea los gastos de educación y compara precios al por mayor." },
-      2: { titulo: "Marzo: Revisión del primer trimestre", texto: "Revisa tus metas de ahorro y ajusta las categorías no esenciales." },
+      0: { titulo: "Enero: La cuesta de enero y planificación inicial", texto: "Prioriza pagar deudas de fin de año y fija tu presupuesto anual." },
+      1: { titulo: "Febrero: Matrículas y temporada escolar", texto: "Monitorea gastos educativos y compara precios al por mayor." },
+      2: { titulo: "Marzo: Revisión del primer trimestre", texto: "Revisa metas de ahorro y ajusta categorías no esenciales." },
       3: { titulo: "Abril: Preparación para pagos de impuestos", texto: "Mes clave para obligaciones fiscales. Guarda un fondo de reserva." },
-      4: { titulo: "Mayo: Gastos festivos y presupuestos familiares", texto: "Establece un tope máximo para regalos y reuniones familiares." },
-      5: { titulo: "Junio: Prima de mitad de año y ahorro", texto: "Destina al menos un 30% de ingresos extras al ahorro o pago de deudas." },
-      6: { titulo: "Julio: Temporada de receso y vacaciones", texto: "Ajustate estrictamente al presupuesto de ocio y prefiere planes locales." },
-      7: { titulo: "Agosto: Declaración de renta e imprevistos", texto: "Mantén al día tu fondo de emergencias para imprevistos." },
-      8: { titulo: "Septiembre: Consolidación y control de deudas", texto: "Aprovecha este mes tranquilo para acelerar abonos a capital." },
-      9: { titulo: "Octubre: Planificación anticipada de fin de año", texto: "Empieza a cotizar compras navideñas para protegerte de alzas de precios." },
-      10: { titulo: "Noviembre: Ofertas con responsabilidad", texto: "Compra solo lo presupuestado en fechas de descuentos masivos." },
-      11: { titulo: "Diciembre: Presupuesto navideño", texto: "Inicia enero con tranquilidad destinando sabiamente tu prima." }
+      4: { titulo: "Mayo: Gastos festivos y presupuestos familiares", texto: "Establece un tope máximo para reuniones familiares." },
+      5: { titulo: "Junio: Prima de mitad de año y ahorro", texto: "Destina un 30% de ingresos extras al ahorro o deudas." },
+      6: { titulo: "Julio: Temporada de receso y vacaciones", texto: "Ajustate estrictamente al presupuesto de ocio." },
+      7: { titulo: "Agosto: Declaración de renta e imprevistos", texto: "Mantén al día tu fondo de emergencias." },
+      8: { titulo: "Septiembre: Consolidación y control de deudas", texto: "Aprovecha para acelerar abonos a capital." },
+      9: { titulo: "Octubre: Planificación anticipada de fin de año", texto: "Empieza a cotizar compras navideñas para protegerte de alzas." },
+      10: { titulo: "Noviembre: Ofertas con responsabilidad", texto: "Compra solo lo presupuestado en fechas de descuentos." },
+      11: { titulo: "Diciembre: Presupuesto navideño", texto: "Inicia enero con tranquilidad gestionando tu prima." }
     };
 
     function mostrarConsejoMes(mesNumero) {
@@ -1306,15 +582,14 @@
       const container = document.getElementById('sharedUsersList');
       container.innerHTML = '';
       if (list.length === 0) {
-        container.innerHTML = `<span style="font-size: 0.8rem; color: var(--text-muted);">Sin usuarios agregados.</span>`;
+        container.innerHTML = `<span class="small text-muted">Sin usuarios compartidos.</span>`;
         return;
       }
       list.forEach(email => {
         container.innerHTML += `
-          <div class="email-tag">
-            <span>${email}</span>
-            <button onclick="eliminarUsuarioCompartido('${email}')">✕</button>
-          </div>
+          <span class="badge bg-secondary d-flex align-items-center gap-1 p-2">
+            ${email} <button type="button" class="btn-close btn-close-white" style="font-size: 0.5rem;" onclick="eliminarUsuarioCompartido('${email}')"></button>
+          </span>
         `;
       });
     }
@@ -1345,7 +620,7 @@
         await updateDoc(userDocRef, { sharedWith: arrayRemove(emailToRemove) });
         await cargarUsuariosCompartidos();
       } catch (err) {
-        console.error("Error al eliminar usuario compartido: ", err);
+        console.error("Error al eliminar: ", err);
       }
     };
 
@@ -1367,7 +642,7 @@
         document.getElementById('payer').value = newName;
         alert("¡Nombre actualizado correctamente!");
       } catch (err) {
-        alert("Error al actualizar nombre: " + err.message);
+        alert("Error: " + err.message);
       }
     });
 
@@ -1383,7 +658,7 @@
         alert("¡Correo electrónico actualizado!");
         document.getElementById('profileEmailCurrentPass').value = '';
       } catch (err) {
-        alert("Error al actualizar correo: " + err.message);
+        alert("Error: " + err.message);
       }
     });
 
@@ -1504,9 +779,9 @@
 
       document.getElementById('formTitle').textContent = '✏️ Editar Gasto';
       document.getElementById('btnSubmitExpense').textContent = 'Actualizar Gasto';
-      document.getElementById('btnSubmitExpense').style.background = 'var(--accent-blue)';
+      document.getElementById('btnSubmitExpense').className = 'btn btn-primary w-100 fw-bold';
       document.getElementById('btnCancelEditExpense').classList.remove('hidden');
-      document.getElementById('expenseFormPanel').classList.add('editing-mode');
+      document.getElementById('expenseFormPanel').classList.add('border', 'border-primary');
       document.getElementById('amount').focus();
     };
 
@@ -1515,9 +790,9 @@
       document.getElementById('expenseForm').reset();
       document.getElementById('formTitle').textContent = '➕ Registrar Nuevo Gasto';
       document.getElementById('btnSubmitExpense').textContent = 'Guardar Gasto';
-      document.getElementById('btnSubmitExpense').style.background = 'var(--accent-green)';
+      document.getElementById('btnSubmitExpense').className = 'btn btn-success w-100 fw-bold';
       document.getElementById('btnCancelEditExpense').classList.add('hidden');
-      document.getElementById('expenseFormPanel').classList.remove('editing-mode');
+      document.getElementById('expenseFormPanel').classList.remove('border', 'border-primary');
       actualizarSubcategorias();
       if (currentUser) {
         document.getElementById('payer').value = currentUser.displayName || (currentUser.email ? currentUser.email.split('@')[0] : 'Invitado');
@@ -1603,15 +878,15 @@
     document.getElementById('scopeFilter').addEventListener('change', () => {
       selectedCategoryFilter = null;
       presupuestoInicial = 0;
-      document.getElementById('alertBanner').className = "alert-banner";
-      document.getElementById('alertBanner').innerText = "";
+      const banner = document.getElementById('alertBanner');
+      banner.className = "alert d-none";
+      banner.innerText = "";
       escucharPresupuesto();
     });
 
-    // --- FUNCIÓN DE EXPORTACIÓN A EXCEL ---
     document.getElementById('btnExportExcel').addEventListener('click', () => {
       if (!currentExpensesList || currentExpensesList.length === 0) {
-        alert("No hay gastos registrados en el rango de fechas o filtro seleccionado para exportar.");
+        alert("No hay gastos registrados para exportar.");
         return;
       }
 
@@ -1649,27 +924,27 @@
       tbody.innerHTML = '';
 
       let gastosTabla = selectedCategoryFilter ? gastos.filter(g => g.category === selectedCategoryFilter) : gastos;
-      document.getElementById('lblSelectedCategoryFilter').textContent = selectedCategoryFilter ? `Filtrado por: ${selectedCategoryFilter} (Clic para limpiar)` : '';
+      document.getElementById('lblSelectedCategoryFilter').textContent = selectedCategoryFilter ? `Filtrado por: ${selectedCategoryFilter}` : '';
 
       if (gastosTabla.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 20px;">No se encontraron gastos registrados.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">No se encontraron gastos registrados.</td></tr>`;
       } else {
         gastosTabla.forEach(g => {
-          const badgeScopeClass = g.scope === 'personal' ? 'badge-scope-personal' : 'badge-scope-family';
+          const badgeScopeClass = g.scope === 'personal' ? 'bg-primary bg-opacity-25 text-primary' : 'bg-success bg-opacity-25 text-success';
           const badgeScopeText = g.scope === 'personal' ? '👤 Personal' : '🏠 Familiar';
           tbody.innerHTML += `
             <tr>
               <td>${g.date || ''}</td>
               <td><span class="badge ${badgeScopeClass}">${badgeScopeText}</span></td>
-              <td><strong>${g.category}</strong><br><span class="badge">${g.subcategory || 'Sin subcategoría'}</span></td>
+              <td><strong>${g.category}</strong><br><span class="badge bg-secondary text-dark" style="font-size: 0.65rem;">${g.subcategory || 'Sin subcat.'}</span></td>
               <td>${g.description}</td>
               <td>${g.payer}</td>
               <td>${g.method}</td>
               <td><strong>${formatearCOP(g.amount)}</strong></td>
               <td>
-                <div class="action-buttons">
-                  <button class="btn-edit-item" onclick="prepararEdicionGasto('${g.id}')" title="Editar">✏️</button>
-                  <button class="btn-delete" onclick="eliminarGasto('${g.id}')" title="Eliminar">🗑️</button>
+                <div class="d-flex gap-1">
+                  <button class="btn btn-outline-primary btn-sm py-0 px-2" onclick="prepararEdicionGasto('${g.id}')" title="Editar">✏️</button>
+                  <button class="btn btn-outline-danger btn-sm py-0 px-2" onclick="eliminarGasto('${g.id}')" title="Eliminar">🗑️</button>
                 </div>
               </td>
             </tr>
@@ -1685,17 +960,17 @@
       if (presupuestoInicial > 0) {
         const pct = (totalGastado / presupuestoInicial) * 100;
         if (disponible < 0) {
-          banner.className = "alert-banner danger";
+          banner.className = "alert alert-danger mb-3 fw-bold";
           banner.innerText = `¡Alerta crítica! Has superado el presupuesto inicial por ${formatearCOP(Math.abs(disponible))}`;
         } else if (pct >= 80) {
-          banner.className = "alert-banner warning";
+          banner.className = "alert alert-warning mb-3 fw-bold";
           banner.innerText = `¡Advertencia! Has alcanzado el ${pct.toFixed(1)}% de tu presupuesto.`;
         } else {
-          banner.className = "alert-banner";
+          banner.className = "alert d-none mb-3";
           banner.innerText = "";
         }
       } else {
-        banner.className = "alert-banner";
+        banner.className = "alert d-none mb-3";
         banner.innerText = "";
       }
 
@@ -1706,20 +981,20 @@
 
       const sortedCategories = Object.entries(categoriasMap).sort((a, b) => b[1] - a[1]);
       if (sortedCategories.length === 0) {
-        categorySummaryContainer.innerHTML = `<span style="font-size: 0.85rem; color: var(--text-muted);">Sin gastos registrados.</span>`;
+        categorySummaryContainer.innerHTML = `<span class="small text-muted">Sin gastos registrados.</span>`;
       } else {
         sortedCategories.forEach(([cat, monto]) => {
           if (monto > maxMonto) { maxMonto = monto; mayorCat = cat; }
           const pctOfTotal = totalGastado > 0 ? ((monto / totalGastado) * 100).toFixed(1) : 0;
           const activeClass = selectedCategoryFilter === cat ? 'active-filter' : '';
           categorySummaryContainer.innerHTML += `
-            <div class="category-item ${activeClass}" onclick="toggleCategoryFilter('${cat}')" title="Clic para filtrar">
-              <div class="category-item-header">
-                <span class="category-name">${cat}</span>
-                <span class="category-total">${formatearCOP(monto)} (${pctOfTotal}%)</span>
+            <div class="category-item ${activeClass}" onclick="toggleCategoryFilter('${cat}')">
+              <div class="d-flex justify-content-between align-items-center mb-1 small">
+                <span class="fw-semibold">${cat}</span>
+                <span class="text-primary fw-bold">${formatearCOP(monto)} (${pctOfTotal}%)</span>
               </div>
-              <div class="progress-bar-bg">
-                <div class="progress-bar-fill" style="width: ${pctOfTotal}%;"></div>
+              <div class="progress" style="height: 6px; background-color: rgba(255,255,255,0.08);">
+                <div class="progress-bar bg-primary" role="progressbar" style="width: ${pctOfTotal}%;"></div>
               </div>
             </div>
           `;
