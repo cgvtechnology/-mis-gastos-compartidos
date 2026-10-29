@@ -70,12 +70,14 @@
       border: 2px solid var(--border-color);
     }
 
-    /* Estilo alargado (tipo billete) para el logo superior en la pantalla de login */
-    #authHeaderLogo {
+    /* Estilo alargado (tipo billete) exclusivo para la pantalla de login */
+    .brand-logo-billet {
       width: 200px;
       height: 80px;
       border-radius: 0.5rem;
       object-fit: cover;
+      background-color: #ffffff;
+      border: 2px solid var(--border-color);
     }
 
     .card-custom {
@@ -161,9 +163,9 @@
 
   <!-- Header / Navbar Superior -->
   <header id="mainHeader" class="d-flex flex-column justify-content-center align-items-center pb-3 mb-4 border-bottom border-secondary text-center">
-    <div class="brand d-flex flex-column align-items-center gap-2">
-      <img src="Logo.jpg" alt="Logotipo CGV Technology" id="authHeaderLogo" class="shadow-sm">
-      <span class="fs-4 fw-bold d-none" id="appMainTitle">Finanzas</span>
+    <div id="brandContainer" class="brand d-flex flex-column align-items-center gap-2">
+      <img src="Logo.jpg" alt="Logotipo CGV Technology" id="authHeaderLogo" class="brand-logo-billet shadow-sm">
+      <span class="fs-4 fw-bold d-none" id="appMainTitle">Finanzas Familiares</span>
     </div>
 
     <!-- Controles derechos (Tema y Usuario) que se ocultan en login -->
@@ -635,6 +637,7 @@
 
     onAuthStateChanged(auth, async (user) => {
       const mainHeader = document.getElementById('mainHeader');
+      const brandContainer = document.getElementById('brandContainer');
       const headerControls = document.getElementById('headerControls');
       const authHeaderLogo = document.getElementById('authHeaderLogo');
       const appMainTitle = document.getElementById('appMainTitle');
@@ -647,12 +650,14 @@
         document.getElementById('profileDisplayName').value = user.displayName || '';
         document.getElementById('profileEmail').value = user.email || '';
 
-        // Cambiar el header a diseño normal (alineado a la izquierda con logo circular y texto visible) al iniciar sesión
+        // Al iniciar sesión: Header alineado a la izquierda, logo redondo y título al lado
         mainHeader.className = "d-flex flex-column flex-sm-row justify-content-between align-items-center pb-3 mb-4 border-bottom border-secondary";
+        brandContainer.className = "brand d-flex flex-row align-items-center gap-3 mb-3 mb-sm-0";
         headerControls.classList.remove('d-none');
         headerControls.classList.add('d-flex');
-        authHeaderLogo.className = "brand-logo-img shadow-sm"; // Vuelve a ser circular y tamaño normal
-        appMainTitle.classList.remove('d-none'); // Muestra el título al lado del logo dentro de la app
+        
+        authHeaderLogo.className = "brand-logo-img shadow-sm"; // Vuelve a ser redondo
+        appMainTitle.classList.remove('d-none'); // Muestra el título al lado del logo
 
         document.getElementById('authWrapper').classList.add('d-none');
         document.getElementById('appContainer').classList.remove('d-none');
@@ -668,12 +673,14 @@
         if (unsubscribeBudget) unsubscribeBudget();
         if (dolarIntervalId) clearInterval(dolarIntervalId);
 
-        // Header centrado con solo el logo alargado para la pantalla de login
+        // En pantalla de login: Header centrado, logo alargado (tipo billete) y sin título al lado
         mainHeader.className = "d-flex flex-column justify-content-center align-items-center pb-3 mb-4 border-bottom border-secondary text-center";
+        brandContainer.className = "brand d-flex flex-column align-items-center gap-2";
         headerControls.classList.add('d-none');
         headerControls.classList.remove('d-flex');
-        authHeaderLogo.id = "authHeaderLogo"; // Aplica estilo billete
-        appMainTitle.classList.add('d-none'); // Oculta el texto en el login
+        
+        authHeaderLogo.className = "brand-logo-billet shadow-sm"; // Logo alargado tipo billete
+        appMainTitle.classList.add('d-none'); // Oculta el título
 
         document.getElementById('authWrapper').classList.remove('d-none');
         document.getElementById('appContainer').classList.add('d-none');
