@@ -306,9 +306,10 @@
         </div>
       </div>
 
+      <!-- WIDGET DE FONDO RESTANTE / SOBREGIRO -->
       <div class="col-12 col-sm-6 col-xl-3">
-        <div class="card-custom p-3 h-100">
-          <h6 class="text-muted small text-uppercase mb-2">Fondo Restante</h6>
+        <div class="card-custom p-3 h-100" id="cardFondoRestante">
+          <h6 class="text-muted small text-uppercase mb-2" id="lblFondoRestanteTitle">Fondo Restante</h6>
           <span class="fs-4 fw-bold text-success" id="txtDisponible">$ 0,00</span>
         </div>
       </div>
@@ -321,7 +322,7 @@
         </div>
       </div>
 
-      <!-- WIDGET DEL DÓLAR EN VIVO (ACTUALIZADO CADA 5 SEGUNDOS) -->
+      <!-- WIDGET DEL DÓLAR EN VIVO -->
       <div class="col-12 col-sm-6 col-xl-3">
         <div class="card-custom p-3 h-100 border-success border-opacity-50">
           <div class="d-flex justify-content-between align-items-center mb-1">
@@ -1039,6 +1040,23 @@
       const disponible = presupuestoInicial - totalGastado;
       document.getElementById('txtPresupuesto').innerText = formatearCOP(presupuestoInicial);
       document.getElementById('txtDisponible').innerText = formatearCOP(disponible);
+
+      // --- CAMBIO DINÁMICO DE TÍTULO Y COLOR SEGÚN DISPONIBLE ---
+      const lblFondoTitle = document.getElementById('lblFondoRestanteTitle');
+      const txtDisponible = document.getElementById('txtDisponible');
+      const cardFondo = document.getElementById('cardFondoRestante');
+
+      if (disponible < 0) {
+        lblFondoTitle.textContent = "⚠️ SOBREGIRO / EXCEDIDO";
+        lblFondoTitle.className = "text-danger small text-uppercase mb-2 fw-bold";
+        txtDisponible.className = "fs-4 fw-bold text-danger";
+        cardFondo.className = "card-custom p-3 h-100 border-danger border-opacity-75";
+      } else {
+        lblFondoTitle.textContent = "Fondo Restante";
+        lblFondoTitle.className = "text-muted small text-uppercase mb-2";
+        txtDisponible.className = "fs-4 fw-bold text-success";
+        cardFondo.className = "card-custom p-3 h-100";
+      }
 
       const banner = document.getElementById('alertBanner');
       if (presupuestoInicial > 0) {
