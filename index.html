@@ -60,6 +60,7 @@
       max-width: 480px;
     }
 
+    /* Logo circular por defecto para el encabezado de la app */
     .brand-logo-img {
       width: 75px;
       height: 75px;
@@ -67,6 +68,14 @@
       object-fit: cover;
       background-color: #ffffff;
       border: 2px solid var(--border-color);
+    }
+
+    /* Estilo alargado (tipo billete/tarjeta) exclusivo para el inicio de sesión */
+    .auth-card .brand-logo-img {
+      width: 180px;
+      height: 75px;
+      border-radius: 0.5rem;
+      object-fit: cover;
     }
 
     .card-custom {
@@ -175,11 +184,14 @@
 
   <!-- CONTENEDOR DE AUTENTICACIÓN -->
   <div id="authWrapper" class="container d-flex justify-content-center align-items-center my-auto" style="min-height: 60vh;">
-    <div id="authContainer" class="auth-card">
-      <h2 class="text-center fs-4 fw-bold mb-1" id="authTitle">Finanzas Familiares</h2>
+    <div id="authContainer" class="auth-card text-center">
+      <div class="mb-3">
+        <img src="Logo.jpg" alt="Logotipo CGV Technology" class="brand-logo-img shadow-sm mx-auto">
+      </div>
+      <h2 class="text-center fs-4 fw-bold mb-1" id="authTitle">Finanzas</h2>
       <p class="text-center text-muted small mb-4">Sincroniza y controla tus gastos individuales o del hogar en tiempo real</p>
 
-      <form id="authForm">
+      <form id="authForm" class="text-start">
         <div class="mb-3">
           <label class="form-label small fw-bold text-muted">Correo Electrónico</label>
           <input type="email" class="form-control" id="authEmail" placeholder="tu@email.com" required />
@@ -611,14 +623,14 @@
       const appMainTitle = document.getElementById('appMainTitle');
 
       if (modo === 'personal') {
-        optFamily.classList.add('d-none');       // Oculta la opción familiar
-        optPersonal.classList.remove('d-none'); // Muestra solo personal
-        expenseScope.value = 'personal';          // Selecciona personal
+        optFamily.classList.add('d-none');
+        optPersonal.classList.remove('d-none');
+        expenseScope.value = 'personal';
         appMainTitle.textContent = 'Finanzas Personales';
       } else {
-        optFamily.classList.remove('d-none');   // Muestra solo familiar
-        optPersonal.classList.add('d-none');     // Oculta la opción personal
-        expenseScope.value = 'family';            // Selecciona familiar
+        optFamily.classList.remove('d-none');
+        optPersonal.classList.add('d-none');
+        expenseScope.value = 'family';
         appMainTitle.textContent = 'Finanzas Familiares';
       }
     }
@@ -769,7 +781,7 @@
 
     document.getElementById('btnToggleAuth').addEventListener('click', () => {
       isSignUpMode = !isSignUpMode;
-      document.getElementById('authTitle').textContent = isSignUpMode ? 'Crear Cuenta' : 'Finanzas Familiares';
+      document.getElementById('authTitle').textContent = isSignUpMode ? 'Crear Cuenta' : 'Finanzas';
       document.getElementById('btnAuthSubmit').textContent = isSignUpMode ? 'Registrarse' : 'Iniciar Sesión';
       document.getElementById('toggleText').textContent = isSignUpMode ? '¿Ya tienes cuenta?' : '¿No tienes cuenta?';
       document.getElementById('btnToggleAuth').textContent = isSignUpMode ? 'Inicia sesión aquí' : 'Regístrate aquí';
@@ -873,7 +885,6 @@
       if (!gasto) return;
       document.getElementById('editingExpenseId').value = gasto.id;
       
-      // Permitir ver la opción guardada al editar
       document.getElementById('optScopeFamily').classList.remove('d-none');
       document.getElementById('optScopePersonal').classList.remove('d-none');
       document.getElementById('expenseScope').value = gasto.scope || 'family';
@@ -905,7 +916,6 @@
       document.getElementById('expenseFormPanel').classList.remove('border', 'border-primary');
       actualizarSubcategorias();
       
-      // Re-sincronizar y ocultar la opción que no corresponde a la vista activa
       const activeScope = document.getElementById('scopeFilter').value;
       sincronizarOpcionesFormulario(activeScope);
 
@@ -990,7 +1000,6 @@
       aplicarFiltroTiempo();
     });
 
-    // --- AL CAMBIAR DE VISTA SUPERIOR ---
     document.getElementById('scopeFilter').addEventListener('change', (e) => {
       selectedCategoryFilter = null;
       presupuestoInicial = 0;
@@ -1076,7 +1085,6 @@
       document.getElementById('txtPresupuesto').innerText = formatearCOP(presupuestoInicial);
       document.getElementById('txtDisponible').innerText = formatearCOP(disponible);
 
-      // --- CAMBIO DINÁMICO DE TÍTULO Y COLOR SEGÚN DISPONIBLE ---
       const lblFondoTitle = document.getElementById('lblFondoRestanteTitle');
       const txtDisponible = document.getElementById('txtDisponible');
       const cardFondo = document.getElementById('cardFondoRestante');
@@ -1181,7 +1189,6 @@
     setInitialDates();
     actualizarSubcategorias();
     document.getElementById('date').valueAsDate = new Date();
-    // Inicializar la sincronización según la vista activa
     sincronizarOpcionesFormulario(document.getElementById('scopeFilter').value);
   </script>
 </body>
